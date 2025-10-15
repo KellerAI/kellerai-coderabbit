@@ -1,0 +1,882 @@
+# CodeRabbit Baseline Configuration
+# Organization: KellerAI
+# Repository: kellerai/coderabbit (Central Configuration)
+# Last Updated: 2025-10-14
+#
+# This is the organization-wide baseline configuration for CodeRabbit.
+# Individual repositories can override these settings with their own .coderabbit.yaml
+#
+# Configuration Inheritance:
+# 1. Central config (this file) provides organization defaults
+# 2. Repository-specific .coderabbit.yaml overrides central config
+# 3. Settings merge (arrays merge, objects deep merge, primitives override)
+
+# Review Profile: "chill" - Balanced code review with high-level summaries
+# This profile provides actionable feedback without overwhelming developers
+reviews:
+  # Enable high-level summary at the top of each review
+  high_level_summary: true
+
+  # Enable high-level summary in release notes format
+  high_level_summary_in_release_notes: true
+
+  # Review profile: chill, assertive, or custom
+  profile: chill
+
+  # Auto-review settings
+  auto_review:
+    enabled: true
+
+    # Automatically review PRs when they are opened (not in draft)
+    drafts: false
+
+    # Automatically review when new commits are pushed
+    on_push: true
+
+    # Review base branch changes
+    base_branches:
+      - main
+      - master
+      - develop
+
+  # Request changes workflow - block PRs with critical issues
+  request_changes_workflow: true  # ENABLED: Block merge for critical quality gate failures
+
+  # Review scope and focus areas
+  scope:
+    # Files to include in review (glob patterns)
+    include:
+      - "**/*.py"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.json"
+      - "**/*.yaml"
+      - "**/*.yml"
+      - "**/*.md"
+
+    # Files to exclude from review - OPTIMIZED to reduce unnecessary processing
+    exclude:
+      - "**/node_modules/**"
+      - "**/dist/**"
+      - "**/build/**"
+      - "**/.venv/**"
+      - "**/venv/**"
+      - "**/__pycache__/**"
+      - "**/*.min.js"
+      - "**/*.min.css"
+      - "**/package-lock.json"
+      - "**/yarn.lock"
+      - "**/poetry.lock"
+      - "**/Pipfile.lock"
+      - "**/.git/**"
+      - "**/.DS_Store"
+      # Additional optimizations for generated and vendor files
+      - "**/*.generated.*"
+      - "**/vendor/**"
+      - "**/.next/**"
+      - "**/.nuxt/**"
+      - "**/coverage/**"
+      - "**/.pytest_cache/**"
+      - "**/.mypy_cache/**"
+      - "**/graphql/schema.graphql"
+    
+    # OPTIMIZED: Smart diff analysis - only review changed sections
+    smart_diff: true
+    context_lines: 3  # Reduced from 5 for faster processing
+    
+    # OPTIMIZED: Incremental review for large PRs
+    incremental_review:
+      enabled: true
+      max_files_per_batch: 10
+      batch_delay: 0  # Process immediately but in chunks
+
+  # Focus review on specific aspects - OPTIMIZED for Sonnet 4.5
+  focus:
+    - security
+    - bug_risk
+    - architecture
+    - testing
+    - performance       # ENHANCED: Sonnet 4.5 strength (41% bug detection)
+    - code_quality      # NEW: Comprehensive analysis enabled
+    - best_practices
+    - documentation
+
+# Comment settings
+comments:
+  # Limit the number of review comments to avoid overwhelming developers
+  max_comments: 30
+
+  # Comment style: brief, detailed, or auto
+  style: auto
+
+  # Tone: friendly, professional, or technical
+  tone: professional
+
+  # Model preferences for Claude Sonnet 4.5
+  model_preferences:
+    use_sonnet_4_5: true
+    
+    # Feedback style configuration to address over-hedging
+    feedback_style:
+      security_issues: "direct"        # Never hedge on security
+      breaking_changes: "direct"       # Always flag clearly
+      critical_bugs: "direct"          # Direct language required
+      performance_suggestions: "balanced"
+      style_preferences: "gentle"
+    
+    # Confidence thresholds for different issue types
+    confidence_threshold:
+      security: 0.60         # Low threshold - catch everything
+      bugs: 0.75             # Medium - balance signal/noise
+      optimizations: 0.85    # High - only confident suggestions
+
+  # Enable inline code suggestions
+  suggestions: true
+
+  # Group related comments together
+  group_similar: true
+
+# Language-specific settings
+languages:
+  python:
+    # Python version
+    version: "3.11"
+
+    # Review focus for Python
+    focus:
+      - type_hints
+      - error_handling
+      - security
+      - performance
+      - pep8
+
+    # Ignore patterns specific to Python
+    ignore_patterns:
+      - "*/migrations/*"
+      - "*/tests/fixtures/*"
+
+  typescript:
+    # TypeScript version
+    version: "5.0"
+
+    # Review focus for TypeScript
+    focus:
+      - type_safety
+      - async_patterns
+      - error_handling
+      - react_best_practices
+
+    # Ignore patterns specific to TypeScript
+    ignore_patterns:
+      - "*.test.ts"
+      - "*.test.tsx"
+      - "*.spec.ts"
+      - "*.spec.tsx"
+
+  javascript:
+    # JavaScript ES version
+    version: "ES2022"
+
+    # Review focus for JavaScript
+    focus:
+      - modern_syntax
+      - async_patterns
+      - error_handling
+
+    # Ignore patterns
+    ignore_patterns:
+      - "*.test.js"
+      - "*.test.jsx"
+      - "*.spec.js"
+      - "*.spec.jsx"
+
+# Knowledge base integration
+knowledge_base:
+  # Enable knowledge base context enrichment
+  enabled: true
+
+  # Paths to knowledge base files
+  files:
+    - ".cursorrules"
+    - "CLAUDE.md"
+    - "CONTRIBUTING.md"
+    - "ARCHITECTURE.md"
+    - "docs/coding-standards/**"
+    - "knowledge-base/organizational-patterns/**"  # Cross-repository learning
+  
+  # OPTIMIZED: Context-aware query selection (Subtask 13.2)
+  context_selection:
+    # File-type awareness for smarter MCP queries
+    file_type_rules:
+      "**/*.py":
+        prefer_mcp: ["kellerai-standards", "context7"]
+        context7_libraries: ["fastapi", "pytest", "pandas", "sqlalchemy"]
+        max_queries: 3
+        
+      "**/*.tsx":
+        prefer_mcp: ["context7", "kellerai-standards"]
+        context7_libraries: ["react", "next.js"]
+        max_queries: 3
+        
+      "**/*.ts":
+        prefer_mcp: ["context7", "kellerai-standards"]
+        context7_libraries: ["typescript", "node.js"]
+        max_queries: 3
+        
+      "**/*.test.{ts,tsx,js,jsx,py}":
+        prefer_mcp: ["context7"]
+        context7_libraries: ["jest", "pytest", "testing-library"]
+        focus: ["testing", "mocking", "assertions"]
+        max_queries: 2
+    
+    # Relevance filtering to reduce low-value context
+    relevance_filtering:
+      enabled: true
+      min_score: 0.6  # Only use context with 60%+ relevance
+      prefer_specific: true  # Prioritize specific over general guidance
+
+  # Linear integration (Task 10.2)
+  linear:
+    # Usage: "auto" (private repos only), "enabled", or "disabled"
+    usage: "auto"
+
+    # Linear team keys for issue tracking
+    # These are the team prefixes used in Linear issues (e.g., ENG-123)
+    # Find your team keys in Linear Settings → Teams
+    team_keys:
+      - ENG        # Engineering team
+      - PROD       # Product team
+      - INFRA      # Infrastructure team
+
+  # Optional: Reference external documentation
+  # external:
+  #   - type: confluence
+  #     url: "https://kellerai.atlassian.net/wiki"
+  #   - type: notion
+  #     url: "https://notion.so/kellerai"
+
+# Issue tracking integration (Task 10 - Linear Configuration)
+issue_tracking:
+  # Enable issue tracking validation
+  enabled: true  # Enabled in Task 10.2
+
+  # Require PRs to link to issues
+  # Start with false for gradual adoption, enable after team training
+  require_issue_link: false
+
+  # Validate PR scope against linked issue
+  # Checks if PR changes align with the linked Linear issue description
+  scope_validation: true
+
+# Chat integrations (optional - for CodeRabbit chat features)
+chat:
+  integrations:
+    linear:
+      # Usage: "auto" (private repos only), "enabled", or "disabled"
+      usage: "auto"
+
+# Quality checks (pre-merge gates)
+# Task 11: Custom Pre-merge Quality Checks Configuration
+quality_checks:
+  # Enable quality checks
+  enabled: true  # Enabled in Task 11.1
+
+  # Execution mode: "warning" or "error"
+  # warning: Show issues but allow merge
+  # error: Block merge on failures
+  # Task 12: Enabled error mode for critical checks with request_changes_workflow
+  mode: error  # ENFORCED: Critical checks block merge via GitHub status checks
+
+  # Built-in checks (Task 11.1)
+  docstring_coverage:
+    enabled: true
+    threshold: 0.85  # 85% coverage requirement
+    mode: warning  # Individual check mode (overrides global)
+    retry_on_transient_failure: true  # Auto-retry on network/API issues
+    max_retries: 3
+    exclude_patterns:
+      - "tests/**"
+      - "migrations/**"
+      - "**/__init__.py"
+      - "scripts/**"
+    message: "Docstring coverage is below 85% threshold. Please add docstrings to public functions, classes, and modules following Google format."
+
+  pr_title_format:
+    enabled: true
+    # Conventional Commits format: type(scope): description
+    pattern: "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\\(.+\\))?: .+"
+    mode: error  # Always enforce PR title format
+    message: "PR title must follow Conventional Commits format: type(scope): description. Examples: 'feat(auth): add JWT authentication', 'fix: resolve memory leak in cache'"
+    examples:
+      - "feat(api): add user authentication endpoint"
+      - "fix(database): resolve connection pool exhaustion"
+      - "docs: update API documentation"
+      - "refactor(service): simplify user validation logic"
+
+  pr_description_required:
+    enabled: true
+    min_length: 100  # Increased from 50 for better context
+    mode: warning
+    required_sections:
+      - "## Summary"
+      - "## Changes"
+      - "## Testing"
+    message: "PR description must be at least 100 characters and include Summary, Changes, and Testing sections. Use the PR template for guidance."
+
+  issue_reference_required:
+    enabled: true
+    mode: warning  # Start with warning, move to error after adoption
+    pattern: "(ENG|PROD|INFRA)-\\d+"  # Linear issue format
+    message: "PR must reference a Linear issue (e.g., ENG-123, PROD-45). Link issue in description or PR title."
+    exceptions:
+      # Allow PRs without issue links for these types
+      - "docs:"
+      - "chore:"
+      - "style:"
+
+  automated_issue_assessment:
+    enabled: true
+    mode: warning
+    # Validate PR scope matches linked Linear issue
+    scope_validation: true
+    # Check if PR addresses all requirements in linked issue
+    completeness_check: true
+    message: "PR changes should align with linked Linear issue scope and requirements."
+
+  # Custom quality checks (Tasks 11.2-11.4)
+  custom_checks:
+    # Task 11.2: Security validation
+    security:
+      enabled: true
+      mode: error  # Block merges with security issues (CRITICAL - always enforced)
+      retry_on_transient_failure: true
+      max_retries: 3
+      checks:
+        - name: hardcoded_credentials
+          description: "Detect hardcoded API keys, passwords, and tokens"
+          severity: critical
+          patterns:
+            # API keys
+            - 'api[_-]?key\s*[=:]\s*["''][^"'']+["'']'
+            - 'apikey\s*[=:]\s*["''][^"'']+["'']'
+            # AWS credentials
+            - 'aws[_-]?access[_-]?key[_-]?id\s*[=:]\s*["''][^"'']+["'']'
+            - 'aws[_-]?secret[_-]?access[_-]?key\s*[=:]\s*["''][^"'']+["'']'
+            # Passwords
+            - 'password\s*[=:]\s*["''][^"'']+["'']'
+            - 'passwd\s*[=:]\s*["''][^"'']+["'']'
+            # Tokens
+            - 'token\s*[=:]\s*["''][^"'']+["'']'
+            - 'auth[_-]?token\s*[=:]\s*["''][^"'']+["'']'
+            # Private keys
+            - '-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----'
+          exclude_patterns:
+            - "tests/**"
+            - "**/*.example"
+            - "**/*.template"
+            - "**/test_*.py"
+          message: "SECURITY: Hardcoded credentials detected. Use environment variables or AWS Secrets Manager instead."
+
+        - name: sql_injection
+          description: "Detect SQL injection vulnerabilities"
+          severity: critical
+          patterns:
+            # String concatenation in SQL
+            - 'execute\s*\(\s*["''].*\{\}.*["''].*format'
+            - 'execute\s*\(\s*f["''].*\{.*\}.*["'']'
+            - 'execute\s*\(\s*["''].*%s.*["''].*%'
+            # Raw SQL with user input
+            - 'raw\s*\(\s*f["'']'
+            - 'cursor\.execute\s*\(\s*f["'']'
+          message: "SECURITY: Potential SQL injection vulnerability. Use parameterized queries or ORM methods."
+
+        - name: sensitive_data_logging
+          description: "Detect logging of sensitive data"
+          severity: high
+          patterns:
+            # Logging passwords, tokens
+            - 'log.*password'
+            - 'log.*token'
+            - 'log.*secret'
+            - 'log.*api[_-]?key'
+            # Logging PII
+            - 'log.*ssn'
+            - 'log.*credit[_-]?card'
+            - 'log.*cvv'
+          case_insensitive: true
+          message: "SECURITY: Potential logging of sensitive data (passwords, tokens, PII). Redact sensitive fields."
+
+        - name: unsafe_deserialization
+          description: "Detect unsafe deserialization patterns"
+          severity: critical
+          patterns:
+            - 'pickle\.loads?\s*\('
+            - 'yaml\.load\s*\([^,)]*\)'  # yaml.load without Loader
+            - 'eval\s*\('
+            - 'exec\s*\('
+          message: "SECURITY: Unsafe deserialization detected. Use safe alternatives (json.loads, yaml.safe_load)."
+
+    # Task 11.3: Architecture and test coverage
+    architecture:
+      enabled: true
+      mode: warning  # Start with warning
+      checks:
+        - name: layer_separation
+          description: "Validate layered architecture compliance"
+          severity: medium
+          rules:
+            # Repository layer should not import from controller/service
+            - pattern: 'repositories/.*\\.py'
+              prohibited_imports:
+                - 'from .*(controllers|api|services)'
+                - 'import .*(controllers|api|services)'
+              message: "Repository layer must not depend on controller or service layers"
+
+            # Model layer should not import from any other layer
+            - pattern: 'models/.*\\.py'
+              prohibited_imports:
+                - 'from .*(controllers|api|services|repositories)'
+                - 'import .*(controllers|api|services|repositories)'
+              message: "Model layer must not depend on any other application layers"
+
+        - name: dependency_injection
+          description: "Ensure dependency injection is used"
+          severity: medium
+          patterns:
+            # FastAPI Depends usage
+            - 'Depends\s*\('
+          required_in:
+            - 'api/**/*.py'
+            - 'controllers/**/*.py'
+          message: "Use FastAPI Depends() for dependency injection in controllers/API routes"
+
+        - name: async_patterns
+          description: "Ensure async/await is used for I/O operations"
+          severity: medium
+          anti_patterns:
+            # Sync libraries in async functions
+            - pattern: 'requests\.(get|post|put|delete|patch)'
+              context: 'async\s+def'
+              message: "Use httpx.AsyncClient instead of requests in async functions"
+            - pattern: 'psycopg2'
+              context: 'async\s+def'
+              message: "Use asyncpg instead of psycopg2 in async functions"
+
+    # Task 11.3: Test coverage
+    testing:
+      enabled: true
+      mode: warning
+      checks:
+        - name: new_functions_have_tests
+          description: "Ensure new functions have corresponding tests"
+          severity: medium
+          rules:
+            # Check if new function definitions have matching test files
+            - pattern: 'def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\('
+              location: 'src/**/*.py'
+              requires_test: 'tests/**/test_*.py'
+              test_pattern: 'def\s+test_\1'
+          exclude_patterns:
+            - 'src/**/__init__.py'
+            - 'src/**/migrations/**'
+          message: "New functions should have corresponding unit tests in tests/ directory"
+
+        - name: bug_fix_regression_tests
+          description: "Ensure bug fixes include regression tests"
+          severity: high
+          rules:
+            # If PR title/description mentions "fix" or "bug", check for new tests
+            - pr_title_pattern: '^fix'
+              requires_new_tests: true
+              message: "Bug fixes should include regression tests to prevent reoccurrence"
+
+    # Task 11.4: Performance checks
+    performance:
+      enabled: true
+      mode: warning
+      checks:
+        - name: n_plus_one_queries
+          description: "Detect N+1 query patterns"
+          severity: high
+          patterns:
+            # Loop with database query inside
+            - 'for\s+\w+\s+in.*:\s*\n.*\.(get|filter|query)'
+            # List comprehension with query
+            - '\[.*\.(get|filter|query).*for.*in.*\]'
+          context:
+            - 'sqlalchemy'
+            - 'django.db'
+          message: "Potential N+1 query detected. Use eager loading (joinedload, prefetch_related) instead."
+
+        - name: missing_database_indexes
+          description: "Check for database index usage on foreign keys"
+          severity: medium
+          rules:
+            # New ForeignKey without index
+            - pattern: 'ForeignKey\('
+              requires_nearby: 'index=True|db_index=True'
+              message: "Foreign keys should have database indexes for query performance"
+
+        - name: algorithm_complexity
+          description: "Flag high complexity algorithms"
+          severity: medium
+          patterns:
+            # Nested loops (potential O(n²) or worse)
+            - 'for\s+\w+\s+in.*:\s*\n.*for\s+\w+\s+in'
+          exclude_patterns:
+            - 'tests/**'
+          message: "Nested loops detected. Consider using more efficient algorithms or data structures."
+
+    # Task 11.4: Breaking changes
+    breaking_changes:
+      enabled: true
+      mode: error  # Always require documentation of breaking changes (CRITICAL - always enforced)
+      retry_on_transient_failure: true
+      max_retries: 3
+      checks:
+        - name: api_signature_changes
+          description: "Detect API signature changes requiring CHANGELOG"
+          severity: high
+          rules:
+            # Function signature changes in public API
+            - pattern: 'def\s+\w+\([^)]*\):'
+              location: 'api/**/*.py'
+              change_type: 'modified'
+              requires_file: 'CHANGELOG.md'
+              requires_pattern: '## \[Unreleased\]|## \[\d+\.\d+\.\d+\]'
+          message: "API signature changes must be documented in CHANGELOG.md with semantic versioning impact"
+
+        - name: removed_public_methods
+          description: "Detect removal of public methods/classes"
+          severity: critical
+          rules:
+            - change_type: 'deleted'
+              pattern: '^(class|def)\s+[A-Z]'  # Public classes/functions
+              requires_file: 'CHANGELOG.md'
+              requires_section: '### BREAKING CHANGES'
+          message: "Removal of public APIs is a BREAKING CHANGE and must be documented in CHANGELOG.md"
+
+# Notification preferences
+notifications:
+  # Notify on review completion
+  on_review_completion: true
+
+  # Notify on quality check failures
+  on_quality_check_failure: true
+
+  # Notify on request changes
+  on_request_changes: true
+
+  # Task 12.2: Enhanced notification for blocked PRs
+  blocked_pr_notifications:
+    enabled: true
+    # Notify team when PR is blocked by quality gates
+    channels:
+      - type: pr_comment  # Always comment on PR
+        template: "blocked_pr_remediation"
+      - type: github_status  # Update GitHub status check
+        context: "CodeRabbit Quality Gates"
+      # Future integrations (configure when ready)
+      # - type: slack
+      #   webhook_url: "${SLACK_WEBHOOK_URL}"
+      #   channel: "#code-reviews"
+      # - type: email
+      #   recipients: ["${PR_AUTHOR}", "tech-leads@kellerai.com"]
+
+  # Remediation guidance templates
+  remediation_templates:
+    blocked_pr_remediation: |
+      ## ⚠️ Quality Gate Failure - Merge Blocked
+      
+      This PR has been blocked due to critical quality gate failures. Please review the issues below and address them before merging.
+      
+      ### Failed Checks
+      {{FAILED_CHECKS_LIST}}
+      
+      ### Next Steps
+      
+      1. **Review Failed Checks**: Each failed check includes specific guidance on what needs to be fixed
+      2. **Fix Issues**: Address the failures according to the remediation guidance
+      3. **Push Changes**: CodeRabbit will automatically re-evaluate when you push fixes
+      4. **Request Override**: If you believe this is a false positive, see override instructions below
+      
+      ### Override Process (Requires Justification)
+      
+      If you need to override a check failure:
+      
+      ```
+      @coderabbitai ignore <check-name> --reason "Detailed justification here (minimum 50 characters)"
+      ```
+      
+      **Available for override**:
+      - `docstring-coverage` (requires tech lead approval)
+      - `layer-separation`, `dependency-injection`, `async-patterns` (architectural checks)
+      - `new-functions-tests`, `bug-fix-regression` (testing checks)
+      - `n-plus-one`, `database-indexes`, `algorithm-complexity` (performance checks)
+      
+      **NOT available for override** (always enforced):
+      - Security checks (`hardcoded-credentials`, `sql-injection`, `sensitive-data-logging`, `unsafe-deserialization`)
+      - Breaking changes (`api-signature-changes`, `removed-public-methods`)
+      - `pr-title-format` (style requirement)
+      
+      ### Need Help?
+      
+      - 📖 **Quick Reference**: [Quality Gates Guide](docs/QUALITY_GATES_QUICK_REFERENCE.md)
+      - 📚 **Complete Documentation**: [Quality Checks Guide](docs/quality-checks-guide.md)
+      - 💬 **Questions**: Contact tech leads or ask in #engineering
+      
+      ### Escalation
+      
+      If you need urgent tech lead approval for an override, mention `@kellerai/tech-leads` in a comment explaining the business justification.
+    
+    security_failure: |
+      ## 🔒 CRITICAL: Security Issue Detected
+      
+      **This PR contains a critical security vulnerability and cannot be merged.**
+      
+      ### Security Issue
+      {{SECURITY_ISSUE_DETAILS}}
+      
+      ### Required Actions
+      
+      1. ⚠️ **DO NOT** merge this PR until the security issue is resolved
+      2. Review the security guidance provided in the check details
+      3. Fix the vulnerability using recommended secure alternatives
+      4. If this is test data, move to appropriate test fixtures directory
+      
+      ### Security Check Overrides
+      
+      Security checks require **elevated permissions** and can only be overridden by:
+      - @kellerai/security-team
+      - @kellerai/admins
+      
+      If you believe this is a false positive, contact the security team for review.
+      
+      ### Resources
+      
+      - [Security Standards](knowledge-base/SECURITY_STANDARDS.md)
+      - [Secure Coding Guidelines](docs/standards/coding-standards.yaml)
+
+  # Slack integration (optional)
+  # slack:
+  #   enabled: false
+  #   webhook_url: ""
+  #   channel: "#code-reviews"
+
+# Performance settings
+performance:
+  # Review frequency - OPTIMIZED for Sonnet 4.5 (50% faster)
+  review_frequency:
+    on_commit: true       # NEW: Enable per-commit (50% faster allows it)
+    on_push: true
+  
+  # Comprehensive analysis scope
+  comprehensive_analysis:
+    enabled: true
+    scope: "full"         # Changed from "incremental" to leverage speed
+    max_files: 50         # Increased from 10 due to improved performance
+  
+  # Maximum time for review (seconds)
+  max_review_time: 300
+
+  # Enable parallel processing
+  parallel_processing: true
+
+  # Cache review results - OPTIMIZED for 20% performance improvement
+  cache_enabled: true
+  cache_ttl: 3600  # 1 hour (increased from default 300s for better hit rate)
+  cache_strategy: "smart"  # Use intelligent cache invalidation
+  
+  # MCP response caching - OPTIMIZED to reduce context retrieval time
+  mcp_cache:
+    enabled: true
+    context7_ttl: 14400  # 4 hours for stable library documentation
+    standards_ttl: 3600  # 1 hour for KellerAI standards (more frequent updates)
+    
+    # OPTIMIZED: PR-scoped deduplication (Subtask 13.2)
+    deduplication:
+      enabled: true
+      scope: "pr"  # Share MCP context across files in same PR
+      similarity_threshold: 0.85  # 85% similarity = duplicate query
+    
+    # OPTIMIZED: Query result reuse with semantic similarity
+    reuse_similar_queries:
+      enabled: true
+      semantic_similarity: true
+      threshold: 0.90  # 90% semantic match = reuse result
+    
+  # Code structure caching - OPTIMIZED for faster repeated analysis
+  code_structure_cache:
+    enabled: true
+    ttl: 1800  # 30 minutes
+    invalidate_on_file_change: true
+
+  # MCP timeout for external context (seconds)
+  mcp_timeout: 5
+
+# Experimental features
+experimental:
+  # Enable AI-powered suggestions
+  ai_suggestions: true
+
+  # Enable cross-repository learning - ENHANCED (Subtask 13.2)
+  cross_repo_learning: true
+  
+  # ENHANCED: Cross-repository learning configuration
+  learning_config:
+    # Pattern detection
+    pattern_detection:
+      enabled: true
+      min_occurrences: 3  # Pattern must appear 3+ times
+      min_repositories: 2  # Across at least 2 repos
+      confidence_threshold: 0.75
+      
+    # Pattern categories to learn
+    learn_patterns:
+      - code_structure
+      - architecture_decisions
+      - security_implementations
+      - performance_optimizations
+      - testing_strategies
+      - error_handling
+      - api_design
+      
+    # Pattern storage
+    storage:
+      location: "knowledge-base/organizational-patterns/"
+      format: "yaml"
+      versioning: true
+      
+    # Pattern application in reviews
+    application:
+      enabled: true
+      suggestion_mode: "proactive"  # Suggest patterns in reviews
+      confidence_display: true  # Show confidence scores
+      min_confidence: 0.75  # Only suggest patterns with 75%+ confidence
+      
+    # Feedback tracking for continuous improvement
+    feedback:
+      track_acceptance: true
+      track_rejection: true
+      auto_adjust_confidence: true
+
+  # Enable contextual code search
+  contextual_search: true
+
+# Override mechanism (Task 11.5)
+# Teams can override quality checks using @coderabbitai commands in PR comments
+# Example: @coderabbitai ignore security-check --reason "False positive - test data only"
+override:
+  # Allow overrides via comments
+  allow_comment_overrides: true
+
+  # Require justification for overrides
+  require_justification: true  # Always mandatory
+
+  # Minimum justification length
+  min_justification_length: 50
+
+  # Override command format
+  command_format: "@coderabbitai ignore <check-name> --reason <justification>"
+
+  # Available check names for override
+  available_checks:
+    # Built-in checks
+    - "docstring-coverage"
+    - "pr-title-format"
+    - "pr-description"
+    - "issue-reference"
+
+    # Security checks (require elevated permissions)
+    - "hardcoded-credentials"
+    - "sql-injection"
+    - "sensitive-data-logging"
+    - "unsafe-deserialization"
+
+    # Architecture checks
+    - "layer-separation"
+    - "dependency-injection"
+    - "async-patterns"
+
+    # Testing checks
+    - "new-functions-tests"
+    - "bug-fix-regression"
+
+    # Performance checks
+    - "n-plus-one"
+    - "database-indexes"
+    - "algorithm-complexity"
+
+    # Breaking changes (cannot be overridden)
+    # - "api-signature-changes"
+    # - "removed-public-methods"
+
+  # Roles allowed to override (GitHub teams/usernames)
+  allowed_roles:
+    - "kellerai/tech-leads"
+    - "kellerai/admins"
+
+  # Elevated permission checks (require admin override)
+  elevated_permission_checks:
+    - "hardcoded-credentials"
+    - "sql-injection"
+    - "unsafe-deserialization"
+
+  elevated_roles:
+    - "kellerai/admins"
+    - "kellerai/security-team"
+
+  # Override logging and audit
+  logging:
+    enabled: true
+    # Log all overrides to GitHub issue comments
+    log_to_pr: true
+    # Create audit trail in dedicated file
+    audit_file: ".coderabbit-overrides.log"
+    # Include override metadata
+    include_metadata:
+      - user
+      - timestamp
+      - check_name
+      - justification
+      - pr_number
+      - pr_title
+
+  # Gradual rollout configuration
+  gradual_rollout:
+    enabled: true
+    # Phase 1: Warning mode (current)
+    phase: 1
+    phases:
+      1:
+        name: "Initial rollout - warnings only"
+        mode: warning
+        duration_days: 14
+        target_compliance: 0.50  # 50% target
+      2:
+        name: "Training phase - increased warnings"
+        mode: warning
+        duration_days: 14
+        target_compliance: 0.75  # 75% target
+      3:
+        name: "Enforcement preparation"
+        mode: warning
+        duration_days: 7
+        target_compliance: 0.90  # 90% target
+        enable_enforcement_preview: true
+      4:
+        name: "Full enforcement"
+        mode: error
+        target_compliance: 0.95  # 95% target
+
+    # Metrics tracking
+    metrics:
+      enabled: true
+      track:
+        - compliance_rate
+        - override_frequency
+        - check_failure_rate
+        - time_to_fix
+      report_frequency: weekly

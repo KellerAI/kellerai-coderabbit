@@ -1,0 +1,281 @@
+approved:
+  - name: "dependency injection"
+    description: "Inject dependencies via constructor or function parameters. Use FastAPI's Depends() system."
+    example: |
+      def get_users(service: UserService = Depends()):
+          return service.get_all()
+    context: ["architecture", "testing"]
+  
+  - name: "async/await"
+    description: "Use async/await for all I/O operations (database, HTTP, file system)"
+    example: |
+      async def fetch_user(user_id: int):
+          user = await db.get_user(user_id)
+          return user
+    context: ["performance", "architecture"]
+  
+  - name: "type hints"
+    description: "Required for all public APIs and function signatures"
+    example: |
+      def calculate_total(items: list[Item]) -> Decimal:
+          return sum(item.price for item in items)
+    context: ["code quality", "documentation"]
+  
+  - name: "dataclasses"
+    description: "Use dataclasses for data-only classes (or Pydantic for validation)"
+    example: |
+      from dataclasses import dataclass
+      
+      @dataclass
+      class User:
+          id: int
+          email: str
+          name: str
+    context: ["architecture", "code quality"]
+  
+  - name: "context managers"
+    description: "Use context managers for resource management (files, connections, locks)"
+    example: |
+      with open('file.txt') as f:
+          content = f.read()
+      
+      async with db.transaction():
+          await db.execute(query)
+    context: ["performance", "reliability"]
+  
+  - name: "generators"
+    description: "Use generators for memory-efficient iteration over large datasets"
+    example: |
+      def read_large_file(path: str):
+          with open(path) as f:
+              for line in f:
+                  yield process_line(line)
+    context: ["performance", "memory"]
+  
+  - name: "list comprehensions"
+    description: "Use list comprehensions for simple transformations (keep them readable)"
+    example: |
+      # Good
+      active_users = [u for u in users if u.is_active]
+      
+      # Too complex - use regular loop
+      # result = [func(x) for x in data if condition(x) for y in x.items() if check(y)]
+    context: ["code quality", "performance"]
+  
+  - name: "f-strings"
+    description: "Use f-strings for string formatting (Python 3.6+)"
+    example: |
+      name = "Alice"
+      message = f"Hello, {name}!"
+    context: ["code quality"]
+  
+  - name: "enums"
+    description: "Use enums for fixed sets of values"
+    example: |
+      from enum import Enum
+      
+      class Status(Enum):
+          PENDING = "pending"
+          APPROVED = "approved"
+          REJECTED = "rejected"
+    context: ["code quality", "type safety"]
+  
+  - name: "property decorators"
+    description: "Use @property for computed attributes and controlled access"
+    example: |
+      class User:
+          @property
+          def full_name(self) -> str:
+              return f"{self.first_name} {self.last_name}"
+    context: ["architecture", "encapsulation"]
+
+discouraged:
+  - name: "global state"
+    description: "Avoid mutable global variables. Use dependency injection or class instances."
+    reason: "Makes testing difficult and creates hidden dependencies"
+    alternative: "Pass state as parameters or use dependency injection"
+    context: ["architecture", "testing"]
+  
+  - name: "synchronous I/O in async context"
+    description: "Don't use synchronous I/O operations in async functions"
+    reason: "Blocks the event loop, defeating the purpose of async"
+    alternative: "Use async libraries (httpx instead of requests, asyncpg instead of psycopg2)"
+    example_bad: |
+      async def fetch_data():
+          response = requests.get(url)  # Blocks event loop!
+          return response.json()
+    example_good: |
+      async def fetch_data():
+          async with httpx.AsyncClient() as client:
+              response = await client.get(url)
+              return response.json()
+    context: ["performance", "async"]
+  
+  - name: "bare except"
+    description: "Don't use bare except clauses"
+    reason: "Catches system exits, keyboard interrupts, and masks bugs"
+    alternative: "Catch specific exceptions or use except Exception"
+    example_bad: |
+      try:
+          risky_operation()
+      except:  # Bad!
+          pass
+    example_good: |
+      try:
+          risky_operation()
+      except ValueError as e:
+          logger.error(f"Invalid value: {e}")
+    context: ["error handling", "reliability"]
+  
+  - name: "mutable default arguments"
+    description: "Don't use mutable objects as default arguments"
+    reason: "The default is shared across all calls, causing unexpected behavior"
+    alternative: "Use None and create the mutable object inside the function"
+    example_bad: |
+      def add_item(item, items=[]):  # Bad!
+          items.append(item)
+          return items
+    example_good: |
+      def add_item(item, items=None):
+          if items is None:
+              items = []
+          items.append(item)
+          return items
+    context: ["code quality", "bugs"]
+  
+  - name: "string concatenation in loops"
+    description: "Don't concatenate strings in loops"
+    reason: "Creates many intermediate string objects (strings are immutable)"
+    alternative: "Use list and join, or f-strings"
+    example_bad: |
+      result = ""
+      for item in items:
+          result += str(item) + ", "  # Bad!
+    example_good: |
+      result = ", ".join(str(item) for item in items)
+    context: ["performance"]
+  
+  - name: "premature optimization"
+    description: "Don't optimize before profiling"
+    reason: "Complicates code without proven benefit"
+    alternative: "Write clear code first, profile, then optimize hot spots"
+    context: ["performance", "code quality"]
+  
+  - name: "deep nesting"
+    description: "Avoid deeply nested code (>3 levels)"
+    reason: "Reduces readability and increases cognitive load"
+    alternative: "Extract functions, use early returns, flatten structure"
+    context: ["code quality", "maintainability"]
+
+prohibited:
+  - name: "eval"
+    description: "Never use eval() on untrusted input"
+    reason: "Severe security risk - allows arbitrary code execution"
+    severity: "CRITICAL"
+    alternative: "Use ast.literal_eval for safe literal evaluation, or proper parsing"
+    context: ["security"]
+  
+  - name: "exec"
+    description: "Never use exec() on untrusted input"
+    reason: "Severe security risk - allows arbitrary code execution"
+    severity: "CRITICAL"
+    alternative: "Redesign to avoid dynamic code execution"
+    context: ["security"]
+  
+  - name: "hardcoded credentials"
+    description: "Never hardcode passwords, API keys, or secrets in code"
+    reason: "Security risk - credentials exposed in version control"
+    severity: "CRITICAL"
+    alternative: "Use environment variables or AWS Secrets Manager"
+    example_bad: |
+      API_KEY = "sk-1234567890abcdef"  # NEVER DO THIS!
+      DB_PASSWORD = "my_secret_pass"   # NEVER DO THIS!
+    example_good: |
+      import os
+      API_KEY = os.getenv("API_KEY")
+      DB_PASSWORD = os.getenv("DB_PASSWORD")
+    context: ["security"]
+  
+  - name: "SQL injection patterns"
+    description: "Never concatenate user input into SQL queries"
+    reason: "Critical security vulnerability - allows database manipulation"
+    severity: "CRITICAL"
+    alternative: "Use parameterized queries or ORM"
+    example_bad: |
+      query = f"SELECT * FROM users WHERE email = '{user_email}'"  # VULNERABLE!
+      cursor.execute(query)
+    example_good: |
+      query = "SELECT * FROM users WHERE email = %s"
+      cursor.execute(query, (user_email,))
+    context: ["security", "database"]
+  
+  - name: "pickle for untrusted data"
+    description: "Never unpickle data from untrusted sources"
+    reason: "Allows arbitrary code execution during deserialization"
+    severity: "CRITICAL"
+    alternative: "Use JSON, Protocol Buffers, or other safe serialization"
+    context: ["security"]
+  
+  - name: "shell=True with user input"
+    description: "Never use subprocess with shell=True and user input"
+    reason: "Command injection vulnerability"
+    severity: "CRITICAL"
+    alternative: "Use shell=False and pass command as list"
+    example_bad: |
+      subprocess.run(f"ls {user_input}", shell=True)  # VULNERABLE!
+    example_good: |
+      subprocess.run(["ls", user_input], shell=False)
+    context: ["security"]
+  
+  - name: "assert for validation"
+    description: "Never use assert for input validation in production"
+    reason: "Asserts can be disabled with -O flag, bypassing validation"
+    severity: "HIGH"
+    alternative: "Use explicit if statements and raise exceptions"
+    example_bad: |
+      assert user_id > 0, "Invalid user ID"  # Bad!
+    example_good: |
+      if user_id <= 0:
+          raise ValueError("Invalid user ID")
+    context: ["validation", "reliability"]
+  
+  - name: "broad exception handling"
+    description: "Don't catch Exception or BaseException in application code"
+    reason: "Masks bugs and unexpected errors"
+    severity: "MEDIUM"
+    alternative: "Catch specific exceptions or use at top-level only"
+    context: ["error handling"]
+
+conditional:
+  - name: "singleton pattern"
+    description: "Use sparingly and only when truly needed"
+    when_appropriate:
+      - "Database connection pools"
+      - "Configuration managers"
+      - "Logger instances"
+    when_inappropriate:
+      - "Business logic classes"
+      - "Service classes"
+      - "Most application code"
+    alternative: "Dependency injection usually better"
+    context: ["architecture"]
+  
+  - name: "class methods and static methods"
+    description: "Use when method doesn't need instance state"
+    when_appropriate:
+      - "Factory methods (@classmethod)"
+      - "Utility functions logically grouped with class (@staticmethod)"
+    when_inappropriate:
+      - "When instance state is needed (use regular methods)"
+    context: ["architecture"]
+  
+  - name: "multiple inheritance"
+    description: "Use with extreme caution"
+    when_appropriate:
+      - "Mixins for cross-cutting concerns"
+      - "Following established frameworks (Django, SQLAlchemy)"
+    when_inappropriate:
+      - "Complex inheritance hierarchies"
+      - "Diamond problem scenarios"
+    alternative: "Prefer composition over inheritance"
+    context: ["architecture"]

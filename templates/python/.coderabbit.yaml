@@ -1,0 +1,101 @@
+# CodeRabbit Configuration Template: Python Projects
+# Inherits from: kellerai/coderabbit (organization baseline)
+#
+# This template extends the baseline configuration with Python-specific settings
+# Apply this to Python projects by copying to project root as .coderabbit.yaml
+
+# Override review focus for Python projects
+reviews:
+  # Inherit base settings, override focus areas
+  focus:
+    - type_hints
+    - error_handling
+    - security
+    - performance
+    - pep8
+    - testing
+    - documentation
+
+  # Python-specific scope patterns
+  scope:
+    include:
+      - "**/*.py"
+      - "**/*.pyi"
+      - "setup.py"
+      - "pyproject.toml"
+      - "requirements.txt"
+      - "Pipfile"
+
+    exclude:
+      - "venv/**"
+      - ".venv/**"
+      - "env/**"
+      - "**/__pycache__/**"
+      - "**/*.pyc"
+      - "**/*.pyo"
+      - "**/*.pyd"
+      - ".pytest_cache/**"
+      - "*.egg-info/**"
+      - "dist/**"
+      - "build/**"
+      - "*/migrations/*"  # Django migrations
+      - "*/tests/fixtures/*"
+      - "**/*_test.py"  # Test files reviewed differently
+      - "**/test_*.py"
+
+# Language-specific settings
+# Comments customization for Python
+comments:
+  max_comments: 30
+  style: detailed  # Python benefits from detailed explanations
+
+  # Python-specific comment priorities
+  priorities:
+    - type_hints: high
+    - error_handling: high
+    - security: high
+    - pep8: medium
+    - documentation: medium
+    - style: low
+
+# Quality checks for Python
+quality_checks:
+  # Docstring coverage
+  docstring_coverage:
+    enabled: true
+    threshold: 0.85  # 85% of public functions documented
+
+  # Type hint coverage
+  type_hint_coverage:
+    enabled: true
+    threshold: 0.80  # 80% type hint coverage
+
+  # Import organization
+  import_organization:
+    enabled: true
+    tool: isort
+
+# Knowledge base - Python specific files
+knowledge_base:
+  files:
+    - ".cursorrules"
+    - "CLAUDE.md"
+    - "pyproject.toml"
+    - "setup.py"
+    - "docs/python-standards.md"
+    - "docs/fastapi-patterns.md"
+    - "docs/django-conventions.md"
+
+# Comments customization - Python-specific priorities
+comments:
+  max_comments: 30
+  style: detailed  # Python benefits from detailed explanations
+  
+  # Python-specific comment priorities
+  priorities:
+    - type_hints: high
+    - error_handling: high
+    - security: high
+    - pep8: medium
+    - documentation: medium
+    - style: low

@@ -1,0 +1,405 @@
+general:
+  code_review:
+    required_approvals: 1
+    auto_assign: true
+    codeowners: true
+    max_pr_size: 500  # lines changed
+    response_time_sla: "24 hours"
+  
+  communication:
+    async_preferred: true
+    documentation: "Update docs with code changes"
+    commit_messages: "Conventional Commits format"
+  
+  quality_gates:
+    tests_required: true
+    linting_pass: true
+    coverage_threshold: 80
+    no_merge_without_approval: true
+
+python:
+  version: "3.11+"
+  
+  naming:
+    functions: "snake_case"
+    classes: "PascalCase"
+    constants: "UPPER_SNAKE_CASE"
+    private_members: "_leading_underscore"
+    protected_members: "_single_underscore"
+    dunder_methods: "__double_underscore__"
+    modules: "lowercase_no_underscores (if short) or snake_case"
+  
+  style:
+    line_length: 88
+    indentation: 4  # spaces
+    quotes: "double for strings, single for internal"
+    trailing_commas: true
+    blank_lines:
+      top_level: 2
+      methods: 1
+  
+  async:
+    required_for: ["I/O operations", "database calls", "HTTP requests", "file operations"]
+    libraries:
+      http: "httpx"
+      database: "asyncpg (PostgreSQL), motor (MongoDB)"
+      file: "aiofiles"
+    avoid: "synchronous operations in async functions"
+  
+  type_hints:
+    required: true
+    style: "Python 3.10+ syntax (use | for Union, list[str] not List[str])"
+    generics: "Use typing.Generic for generic classes"
+    return_types: "Always specify return type"
+    mypy: "Enable strict mode in CI/CD"
+  
+  docstrings:
+    style: "Google"
+    required_for:
+      - "All public functions"
+      - "All classes"
+      - "All modules"
+      - "Complex private functions"
+    min_length: "One-line summary minimum"
+    sections: ["Args", "Returns", "Raises", "Examples (for complex functions)"]
+  
+  imports:
+    order:
+      - "Standard library"
+      - "Third-party packages"
+      - "Local application imports"
+    style: "One import per line"
+    sorting: "Alphabetical within each group"
+    grouping: "Blank line between groups"
+    formatting: "Use ruff to auto-format imports"
+  
+  testing:
+    framework: "pytest"
+    async_tests: "pytest-asyncio"
+    mocking: "pytest-mock or unittest.mock"
+    coverage: "pytest-cov"
+    naming: "test_<function>_<scenario>_<expected_result>"
+    structure:
+      unit: "tests/unit/"
+      integration: "tests/integration/"
+      e2e: "tests/e2e/"
+    fixtures: "conftest.py in each test directory"
+  
+  linting:
+    tool: "ruff"
+    config: "pyproject.toml"
+    rules:
+      - "Enable all recommended rules"
+      - "E501 (line too long) at 88 chars"
+      - "D (pydocstyle) for docstring checks"
+    auto_fix: true
+  
+  formatting:
+    tool: "ruff format"
+    compatible_with: "Black"
+    config: "pyproject.toml"
+    line_length: 88
+  
+  error_handling:
+    prefer: "Explicit exceptions over error codes"
+    custom_exceptions: "Create custom exception classes"
+    logging: "Always log exceptions with context"
+    user_facing: "Never expose stack traces to users"
+
+javascript:
+  version: "ES2022+"
+  runtime: "Node.js 18+"
+  
+  naming:
+    functions: "camelCase"
+    classes: "PascalCase"
+    constants: "UPPER_SNAKE_CASE"
+    private_fields: "#privatefield (or _privateField for older code)"
+    components: "PascalCase (React components)"
+    files: "kebab-case.js or PascalCase.jsx (React)"
+  
+  style:
+    line_length: 100
+    indentation: 2  # spaces
+    quotes: "single for JS, double for JSX attributes"
+    semicolons: true
+    trailing_commas: "es5 (multiline arrays/objects)"
+  
+  modules:
+    system: "ES6 modules (import/export)"
+    avoid: "CommonJS (require/module.exports) in new code"
+    dynamic_imports: "Use for code splitting"
+  
+  async:
+    prefer: "async/await over Promises"
+    avoid: "Callbacks (callback hell)"
+    error_handling: "try/catch for async/await"
+  
+  testing:
+    framework: "Jest"
+    react: "React Testing Library"
+    e2e: "Playwright"
+    naming: "describe() for grouping, it() for tests"
+    coverage: 80
+  
+  linting:
+    tool: "ESLint"
+    config: "Airbnb base + custom rules"
+    plugins:
+      - "eslint-plugin-import"
+      - "eslint-plugin-react (if React)"
+      - "eslint-plugin-react-hooks (if React)"
+  
+  formatting:
+    tool: "Prettier"
+    config: ".prettierrc"
+    print_width: 100
+    semi: true
+    single_quote: true
+    trailing_comma: "es5"
+
+typescript:
+  version: "5.0+"
+  
+  strict_mode: true
+  
+  naming:
+    interfaces: "PascalCase (no I prefix)"
+    types: "PascalCase"
+    enums: "PascalCase"
+    type_parameters: "T, U, V or descriptive (TItem, TResult)"
+  
+  types:
+    prefer: "Explicit types over implicit any"
+    avoid: "any (use unknown if truly unknown)"
+    null_checks: "strictNullChecks enabled"
+    utility_types: "Use built-in utility types (Partial, Required, Pick, etc.)"
+  
+  interfaces_vs_types:
+    prefer_interface: "For object shapes, especially public APIs"
+    prefer_type: "For unions, tuples, and complex types"
+  
+  generics:
+    use_when: "Creating reusable components/functions"
+    naming: "Descriptive for complex generics"
+  
+  testing:
+    framework: "Jest with ts-jest"
+    types: "Type-check tests"
+  
+  configuration:
+    tsconfig: "Extend from base config"
+    strict: true
+    target: "ES2022"
+    module: "ESNext"
+    moduleResolution: "bundler"
+
+react:
+  version: "18+"
+  
+  components:
+    prefer: "Function components over class components"
+    naming: "PascalCase"
+    file_extension: ".jsx or .tsx"
+  
+  hooks:
+    rules: "Follow Rules of Hooks (ESLint plugin enforces)"
+    custom_hooks: "Prefix with 'use' (e.g., useAuth, useForm)"
+    dependencies: "Include all dependencies in useEffect"
+  
+  props:
+    destructure: "Destructure props in function signature"
+    types: "PropTypes or TypeScript interfaces"
+    default_props: "Use default parameters"
+  
+  state_management:
+    local: "useState for component-local state"
+    global: "Context API for app-wide state, or Zustand/Redux"
+    server: "React Query or SWR for server state"
+  
+  styling:
+    approach: "CSS Modules or Tailwind CSS"
+    avoid: "Inline styles (except dynamic values)"
+  
+  testing:
+    library: "React Testing Library"
+    prefer: "Testing behavior over implementation"
+    avoid: "Shallow rendering"
+
+api_design:
+  versioning:
+    format: "/api/v1/, /api/v2/"
+    required: true
+    breaking_changes: "Require new version"
+  
+  resources:
+    naming: "Plural nouns (e.g., /users, /orders)"
+    nesting: "Max 2 levels deep (/users/{id}/orders)"
+    kebab_case: "Use for multi-word resources (/user-profiles)"
+  
+  http_methods:
+    GET: "Retrieve resource(s), idempotent, no side effects"
+    POST: "Create resource, non-idempotent"
+    PUT: "Replace entire resource, idempotent"
+    PATCH: "Partial update, idempotent"
+    DELETE: "Remove resource, idempotent"
+  
+  request_format:
+    content_type: "application/json"
+    validation: "Validate all input with Pydantic"
+    max_size: "10MB request body limit"
+  
+  response_format:
+    success:
+      GET: "200 OK with data"
+      POST: "201 Created with Location header"
+      PUT: "200 OK with updated data"
+      PATCH: "200 OK with updated data"
+      DELETE: "204 No Content"
+    
+    error: |
+      {
+        "error": {
+          "code": "VALIDATION_ERROR",
+          "message": "Invalid email format",
+          "field": "email",
+          "details": {}
+        }
+      }
+  
+  pagination:
+    required: "All list endpoints"
+    format: "?page=1&limit=20"
+    default_limit: 20
+    max_limit: 100
+    response_metadata: |
+      {
+        "data": [...],
+        "meta": {
+          "total": 150,
+          "page": 1,
+          "limit": 20,
+          "totalPages": 8,
+          "hasMore": true
+        }
+      }
+  
+  filtering:
+    format: "?status=active&role=admin"
+    operators: "?created_at__gte=2025-01-01"
+  
+  sorting:
+    format: "?sort=created_at&order=desc"
+    multiple: "?sort=status,created_at"
+  
+  authentication:
+    method: "JWT Bearer tokens"
+    header: "Authorization: Bearer <token>"
+    expiry: "24 hours"
+    refresh: "Use refresh tokens"
+  
+  rate_limiting:
+    user: "100 requests/minute"
+    ip: "500 requests/minute"
+    headers:
+      - "X-RateLimit-Limit"
+      - "X-RateLimit-Remaining"
+      - "X-RateLimit-Reset"
+  
+  headers:
+    required:
+      - "Content-Type: application/json"
+      - "X-Request-ID: <uuid>"
+    cors: "Configure CORS appropriately"
+    security:
+      - "Strict-Transport-Security"
+      - "X-Content-Type-Options: nosniff"
+      - "X-Frame-Options: DENY"
+
+database:
+  primary: "PostgreSQL 15+"
+  
+  naming:
+    tables: "snake_case, plural (e.g., users, order_items)"
+    columns: "snake_case"
+    indexes: "idx_<table>_<columns>"
+    foreign_keys: "fk_<table>_<referenced_table>"
+  
+  migrations:
+    tool: "Alembic (Python) or Prisma (TypeScript)"
+    naming: "<timestamp>_<description>.py"
+    reversible: "Always provide downgrade"
+    testing: "Test migrations on staging first"
+  
+  queries:
+    orm: "Prefer ORM (SQLAlchemy, Prisma)"
+    raw_sql: "Use for complex queries, but parameterize"
+    n_plus_one: "Use eager loading (joinedload, selectinload)"
+    explain: "Run EXPLAIN on complex queries"
+  
+  indexes:
+    required:
+      - "All foreign keys"
+      - "Frequently queried columns"
+      - "Columns used in WHERE, ORDER BY, JOIN"
+    types: "B-tree (default), GIN (JSONB), BRIN (large tables)"
+  
+  performance:
+    connection_pooling: "Always use connection pooling"
+    pool_size: "10-20 for web apps"
+    timeouts: "Set query timeouts"
+
+git_workflow:
+  branching:
+    strategy: "Git Flow"
+    branches:
+      main: "Production-ready code"
+      develop: "Integration branch"
+      feature: "feature/<ticket-id>-<description>"
+      bugfix: "bugfix/<ticket-id>-<description>"
+      hotfix: "hotfix/<ticket-id>-<description>"
+      release: "release/v<version>"
+  
+  commits:
+    format: "Conventional Commits"
+    types:
+      - "feat: New feature"
+      - "fix: Bug fix"
+      - "docs: Documentation changes"
+      - "style: Code style changes (formatting)"
+      - "refactor: Code refactoring"
+      - "test: Adding/updating tests"
+      - "chore: Maintenance tasks"
+    message_format: "<type>(<scope>): <description>"
+    example: "feat(auth): add JWT refresh token support"
+    imperative: "Use imperative mood (add, not added)"
+  
+  pull_requests:
+    title: "Clear, descriptive title matching commit convention"
+    description: "Use PR template (what, why, how, testing)"
+    size: "Keep small (<500 lines when possible)"
+    single_concern: "One logical change per PR"
+    tests: "All tests must pass"
+    linting: "All linting must pass"
+    review: "At least 1 approval required"
+    draft: "Use draft PRs for WIP"
+
+ci_cd:
+  testing:
+    run_on: "Every commit to PR"
+    required: "All tests must pass to merge"
+    coverage: "Must maintain or improve coverage"
+  
+  linting:
+    run_on: "Every commit"
+    auto_fix: "Auto-fix formatting issues"
+    required: "Must pass to merge"
+  
+  build:
+    run_on: "Every commit to main/develop"
+    artifacts: "Store build artifacts"
+  
+  deployment:
+    staging: "Auto-deploy develop to staging"
+    production: "Manual approval for main to production"
+    rollback: "Always have rollback plan"

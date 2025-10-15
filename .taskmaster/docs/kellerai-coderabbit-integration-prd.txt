@@ -1,0 +1,1813 @@
+<rpg-method>
+# KellerAI CodeRabbit Integration - Product Requirements Document
+
+This PRD uses the Repository Planning Graph (RPG) methodology to structure KellerAI's comprehensive CodeRabbit integration project. The RPG method separates functional requirements (WHAT) from structural implementation (HOW), then connects them with explicit dependencies for topological execution.
+
+**Project Version:** 1.0  
+**Date:** 2025-10-14  
+**Status:** Ready for TaskMaster Parsing
+
+</rpg-method>
+
+---
+
+<overview>
+
+## Problem Statement
+
+KellerAI's development workflow currently lacks:
+1. **Automated Code Quality Gates** - Manual code reviews are time-consuming and inconsistent
+2. **Contextual Code Analysis** - Reviewers lack access to relevant documentation, standards, and architectural decisions during review
+3. **Pre-merge Validation** - Issues discovered after merge increase technical debt and production bugs
+4. **AI-Enhanced Workflows** - No integration between AI coding assistants (Claude Code) and automated quality checks
+5. **Organizational Standards Enforcement** - Coding standards and architectural patterns not consistently applied
+
+**Impact:** Development team spends 2+ hours per developer per day on code reviews, with 50% of production bugs traceable to inadequate pre-merge validation.
+
+## Target Users
+
+**Primary Users:**
+- **Software Engineers** - Need fast, accurate code review feedback during development
+- **Tech Leads** - Require visibility into code quality metrics and consistent standards enforcement
+- **DevOps Engineers** - Need automated quality gates integrated into CI/CD pipelines
+
+**Secondary Users:**
+- **Product Managers** - Want visibility into development velocity and quality metrics
+- **Security Team** - Require automated security vulnerability scanning
+- **New Hires** - Need guidance on organizational coding standards
+
+## Success Metrics
+
+**Quantitative Metrics:**
+- **Review Time Reduction:** From 2 hours/day/developer to <30 minutes/day (75% reduction)
+- **Pre-PR Issue Detection:** 90% of issues caught before PR creation
+- **Production Bug Reduction:** 50% fewer bugs reaching production
+- **Code Quality Gates:** 95% PR compliance with organizational standards
+- **Developer Satisfaction:** 4.5/5 rating on review quality and speed
+- **ROI:** $23,200/month net profit (5,900% ROI)
+
+**Qualitative Metrics:**
+- Consistent application of coding standards across all repositories
+- Reduced cognitive load on code reviewers
+- Faster onboarding for new team members
+- Increased confidence in code quality before deployment
+
+</overview>
+
+---
+
+<functional-decomposition>
+
+## Capability Tree
+
+### Capability: PR Review Automation
+**Description:** Automated AI-powered code reviews on pull requests with contextual feedback
+
+#### Feature: Automatic PR Analysis
+- **Description:** Trigger code review automatically when PRs are created or updated
+- **Inputs:** Git diff, PR metadata, linked issues, repository context
+- **Outputs:** Line-by-line review comments, high-level summary, security findings
+- **Behavior:** CodeRabbit analyzes code changes, identifies issues, posts structured feedback as PR comments
+
+#### Feature: Issue Tracking Integration
+- **Description:** Validate PRs against linked issue requirements
+- **Inputs:** PR description, linked Jira/Linear issues, git diff
+- **Outputs:** Scope validation report, requirement coverage analysis
+- **Behavior:** Extract issue requirements, compare to PR changes, flag out-of-scope modifications
+
+#### Feature: Interactive Review Commands
+- **Description:** Team members interact with CodeRabbit via @ commands in PR comments
+- **Inputs:** @coderabbitai commands, review context, code snippets
+- **Outputs:** Clarifications, code suggestions, explanations
+- **Behavior:** Parse commands, execute requested actions, respond with relevant information
+
+#### Feature: Knowledge Base Learning
+- **Description:** Learn from team feedback and adapt review patterns over time
+- **Inputs:** @coderabbitai learning commands, team preferences, code patterns
+- **Outputs:** Updated review behavior, stored learnings
+- **Behavior:** Repository-wide and line-specific learning, apply preferences in future reviews
+
+### Capability: CLI Integration
+**Description:** Terminal-based code reviews integrated with AI coding workflows
+
+#### Feature: Local Code Review
+- **Description:** Review uncommitted or committed changes from command line
+- **Inputs:** Git working directory, uncommitted files, commit range
+- **Outputs:** Review findings (interactive, plain text, or AI-optimized)
+- **Behavior:** Analyze local changes, present findings in requested format
+
+#### Feature: Claude Code Autonomous Workflow
+- **Description:** Enable implement-review-fix cycles without human intervention
+- **Inputs:** Feature requirements, codebase context, review findings
+- **Outputs:** Clean, reviewed code ready for PR
+- **Behavior:** Claude Code implements feature → runs CLI review → parses findings → applies fixes automatically
+
+#### Feature: Background Execution
+- **Description:** Non-blocking code reviews during active development
+- **Inputs:** Review request, working directory
+- **Outputs:** Review results written to file/stdout
+- **Behavior:** Execute review in background process, allow continued development
+
+#### Feature: Pre-commit Validation
+- **Description:** Validate code quality before committing to repository
+- **Inputs:** Staged changes, git status
+- **Outputs:** Pass/fail status, list of issues
+- **Behavior:** Run review on staged files, block commit if critical issues found (optional)
+
+### Capability: Context Enrichment
+**Description:** Enhance code reviews with external context from multiple sources
+
+#### Feature: Library Documentation Context
+- **Description:** Provide up-to-date library documentation during reviews
+- **Inputs:** Import statements, library API calls, library versions
+- **Outputs:** Official documentation references, deprecation warnings, best practices
+- **Behavior:** Detect library usage, fetch relevant docs via Context7 MCP, include in review
+
+#### Feature: Internal Documentation Access
+- **Description:** Reference internal documentation during code review
+- **Inputs:** Code changes, architectural context, search queries
+- **Outputs:** Links to ADRs, design docs, API specifications, security policies
+- **Behavior:** Search Confluence/Notion via MCP, return relevant documentation sections
+
+#### Feature: Organizational Standards Lookup
+- **Description:** Validate code against KellerAI-specific standards
+- **Inputs:** Code patterns, architectural decisions, coding conventions
+- **Outputs:** Standards compliance report, pattern approval status
+- **Behavior:** Query custom KellerAI MCP server, validate against standards.yaml and ADRs
+
+### Capability: Quality Gate Enforcement
+**Description:** Automated pre-merge checks enforcing organizational standards
+
+#### Feature: Built-in Quality Checks
+- **Description:** Standard checks for docstrings, PR format, issue alignment
+- **Inputs:** Code documentation, PR title/description, linked issues
+- **Outputs:** Pass/fail status for each check, detailed findings
+- **Behavior:** Calculate docstring coverage, validate PR format, assess issue scope
+
+#### Feature: Custom Security Checks
+- **Description:** Organization-specific security validation
+- **Inputs:** Code diff, security patterns, credential patterns
+- **Outputs:** Security vulnerability report, severity levels
+- **Behavior:** Scan for hardcoded credentials, SQL injection, sensitive data leaks, authentication issues
+
+#### Feature: Architecture Compliance Validation
+- **Description:** Enforce layered architecture and design patterns
+- **Inputs:** File structure, import statements, class/function organization
+- **Outputs:** Architecture violation report, suggested fixes
+- **Behavior:** Validate dependency flow, check layer boundaries, verify DI patterns
+
+#### Feature: Test Coverage Requirements
+- **Description:** Ensure adequate test coverage for all new code
+- **Inputs:** New functions/endpoints, test files, coverage reports
+- **Outputs:** Coverage analysis, missing test report
+- **Behavior:** Identify new code, locate corresponding tests, calculate coverage percentage
+
+#### Feature: Breaking Changes Documentation
+- **Description:** Require documentation for all breaking changes
+- **Inputs:** API signature changes, schema modifications, config changes
+- **Outputs:** Breaking change detection report, documentation validation
+- **Behavior:** Detect breaking patterns, verify CHANGELOG.md and migration guide exist
+
+### Capability: Central Configuration Management
+**Description:** Organization-wide baseline configuration with repository-level flexibility
+
+#### Feature: Central Config Repository
+- **Description:** Single source of truth for organization-wide CodeRabbit settings
+- **Inputs:** Organization standards, review preferences, tool configurations
+- **Outputs:** Baseline .coderabbit.yaml configuration
+- **Behavior:** Serve as default config for all repositories without local overrides
+
+#### Feature: Configuration Inheritance
+- **Description:** Repositories automatically inherit central configuration
+- **Inputs:** Repository context, presence of local .coderabbit.yaml
+- **Outputs:** Effective configuration (central or local)
+- **Behavior:** Check for local config → if not found, use central → apply to reviews
+
+#### Feature: Repository Override Capability
+- **Description:** Allow repositories to override central config when needed
+- **Inputs:** Repository-specific requirements, local .coderabbit.yaml
+- **Outputs:** Complete override of central configuration
+- **Behavior:** Detect local config file, use it exclusively (no merging with central)
+
+</functional-decomposition>
+
+---
+
+<structural-decomposition>
+
+## Repository Structure
+
+```
+kellerai-coderabbit-ecosystem/
+├── kellerai/coderabbit/                    # Central configuration repository
+│   ├── .coderabbit.yaml                    # Organization baseline config
+│   ├── README.md                           # Usage documentation
+│   ├── docs/
+│   │   ├── customization-guide.md          # How to override settings
+│   │   ├── configuration-reference.md      # Field explanations
+│   │   ├── override-examples.md            # Common patterns
+│   │   └── changelog.md                    # Configuration change history
+│   ├── templates/                          # Pre-configured templates
+│   │   ├── typescript-project.yaml
+│   │   ├── python-project.yaml
+│   │   ├── react-frontend.yaml
+│   │   ├── nodejs-backend.yaml
+│   │   └── microservices.yaml
+│   └── scripts/
+│       ├── validate-config.sh              # YAML syntax validation
+│       └── sync-to-repos.sh                # Bulk config deployment
+│
+├── kellerai/project-a/                     # Application repository
+│   └── (inherits from central)
+│
+├── kellerai/project-b/                     # Application repository
+│   └── .coderabbit.yaml                    # Local override
+│
+├── mcp-servers/                            # MCP server implementations
+│   ├── kellerai-standards-mcp/
+│   │   ├── server.py                       # Custom MCP server
+│   │   ├── standards.yaml                  # Coding standards
+│   │   ├── adr/                            # Architecture Decision Records
+│   │   └── requirements.txt
+│   └── README.md
+│
+└── cli-integration/                        # CLI setup and workflows
+    ├── installation/
+    │   ├── install-cli.sh
+    │   └── team-setup.sh
+    ├── workflows/
+    │   ├── claude-code-prompts.md
+    │   └── git-hooks/
+    │       └── pre-commit
+    └── README.md
+```
+
+## Module Definitions
+
+### Module: Central Configuration Repository
+- **Maps to capability:** Central Configuration Management
+- **Responsibility:** Serve organization-wide baseline CodeRabbit configuration
+- **File structure:**
+  ```
+  kellerai/coderabbit/
+  ├── .coderabbit.yaml       # Main config
+  ├── docs/                  # Documentation
+  ├── templates/             # Project templates
+  └── scripts/               # Automation
+  ```
+- **Exports:**
+  - `organization-baseline-config` - Default settings for all repos
+  - `project-templates` - Pre-configured settings by project type
+  - `validation-scripts` - Config testing utilities
+
+### Module: CLI Installation & Setup
+- **Maps to capability:** CLI Integration
+- **Responsibility:** Install and configure CodeRabbit CLI for team
+- **File structure:**
+  ```
+  cli-integration/
+  ├── installation/
+  │   ├── install-cli.sh
+  │   ├── team-setup.sh
+  │   └── authenticate.sh
+  └── workflows/
+      ├── claude-code-prompts.md
+      └── git-hooks/
+  ```
+- **Exports:**
+  - `install_cli()` - Team-wide CLI installation
+  - `authenticate_team()` - Batch authentication
+  - `setup_git_hooks()` - Pre-commit integration
+
+### Module: MCP Server Infrastructure
+- **Maps to capability:** Context Enrichment
+- **Responsibility:** Deploy and manage MCP servers for contextual reviews
+- **File structure:**
+  ```
+  mcp-servers/
+  ├── kellerai-standards-mcp/
+  │   ├── server.py
+  │   ├── standards.yaml
+  │   └── adr/
+  ├── context7-config/
+  └── documentation-mcp/
+  ```
+- **Exports:**
+  - `KellerAIStandardsMCP` - Custom standards server
+  - `get_coding_standards()` - Retrieve standards by category
+  - `search_adr()` - Find architectural decisions
+  - `check_pattern_approval()` - Validate code patterns
+
+### Module: Pre-merge Check Library
+- **Maps to capability:** Quality Gate Enforcement
+- **Responsibility:** Define and enforce organizational quality gates
+- **File structure:**
+  ```
+  quality-gates/
+  ├── built-in-checks.yaml
+  ├── custom-checks/
+  │   ├── security.yaml
+  │   ├── architecture.yaml
+  │   ├── testing.yaml
+  │   ├── breaking-changes.yaml
+  │   └── performance.yaml
+  └── test-suites/
+  ```
+- **Exports:**
+  - `built-in-checks-config` - Docstrings, PR format, issue assessment
+  - `custom-checks-library` - Organization-specific validations
+  - `test-cases` - Validation test suites
+
+### Module: PR Review Automation
+- **Maps to capability:** PR Review Automation
+- **Responsibility:** Configure automated PR review triggers and behavior
+- **File structure:**
+  ```
+  pr-automation/
+  ├── review-config.yaml
+  ├── knowledge-base/
+  │   ├── .cursorrules
+  │   ├── CLAUDE.md
+  │   └── standards/
+  └── issue-integration/
+      ├── jira-config.yaml
+      └── linear-config.yaml
+  ```
+- **Exports:**
+  - `auto-review-config` - Review trigger settings
+  - `knowledge-base-files` - Team standards and patterns
+  - `issue-tracker-integration` - Jira/Linear setup
+
+</structural-decomposition>
+
+---
+
+<dependency-graph>
+
+## Dependency Chain
+
+### Foundation Layer (Phase 0)
+**No dependencies - these are built first**
+
+- **CodeRabbit Account Setup**
+  - Purpose: Establish CodeRabbit organization account
+  - Provides: Authentication, billing, organization settings
+  
+- **GitHub/GitLab Organization Access**
+  - Purpose: Admin access to install CodeRabbit app
+  - Provides: Repository permissions, webhook setup capability
+
+- **Development Environment Baseline**
+  - Purpose: Standard developer machine setup
+  - Provides: Git, terminal access, shell configuration
+
+### PR Automation Layer (Phase 1)
+**Depends on:** Foundation Layer
+
+- **CodeRabbit App Installation**: Depends on [CodeRabbit Account Setup, GitHub/GitLab Organization Access]
+  - Purpose: Install CodeRabbit on GitHub/GitLab organization
+  - Provides: PR review automation, webhook triggers
+
+- **Central Configuration Repository**: Depends on [CodeRabbit App Installation]
+  - Purpose: Create kellerai/coderabbit with baseline config
+  - Provides: Organization-wide default settings
+
+- **Knowledge Base Setup**: Depends on [Central Configuration Repository]
+  - Purpose: Populate .cursorrules, CLAUDE.md, team standards
+  - Provides: Contextual review guidance for CodeRabbit
+
+- **PR Review Testing**: Depends on [Knowledge Base Setup]
+  - Purpose: Validate PR reviews working with knowledge base
+  - Provides: Baseline review quality metrics
+
+### CLI Integration Layer (Phase 2)
+**Depends on:** PR Automation Layer
+
+- **CLI Installation Script**: Depends on [Development Environment Baseline]
+  - Purpose: Automate CLI installation for team
+  - Provides: install-cli.sh with team-specific settings
+
+- **Team Authentication**: Depends on [CLI Installation Script, CodeRabbit Account Setup]
+  - Purpose: Authenticate all developers with CodeRabbit CLI
+  - Provides: Authenticated CLI access for team
+
+- **Claude Code Workflow Documentation**: Depends on [Team Authentication]
+  - Purpose: Document implement-review-fix patterns
+  - Provides: Prompt templates, best practices
+
+- **Git Hook Integration**: Depends on [Team Authentication]
+  - Purpose: Optional pre-commit review hooks
+  - Provides: Pre-commit quality gates
+
+- **CLI Workflow Validation**: Depends on [Claude Code Workflow Documentation, Git Hook Integration]
+  - Purpose: Test autonomous workflows with Claude Code
+  - Provides: Validated workflow patterns
+
+### Context Enrichment Layer (Phase 3)
+**Depends on:** PR Automation Layer
+
+- **Context7 MCP Configuration**: Depends on [CodeRabbit App Installation]
+  - Purpose: Configure library documentation access
+  - Provides: Context7 integration for common libraries
+
+- **Documentation MCP Selection**: Depends on [CodeRabbit App Installation]
+  - Purpose: Choose and configure Confluence or Notion MCP
+  - Provides: Internal documentation access
+
+- **Documentation MCP Installation**: Depends on [Documentation MCP Selection]
+  - Purpose: Install and configure chosen documentation MCP
+  - Provides: ADR, spec, and design doc access
+
+- **Custom KellerAI MCP Development**: Depends on [Knowledge Base Setup]
+  - Purpose: Build custom MCP server for organizational standards
+  - Provides: standards.yaml, ADR search, pattern validation
+
+- **Issue Tracking Integration**: Depends on [CodeRabbit App Installation]
+  - Purpose: Connect Jira or Linear for requirement validation
+  - Provides: Issue linking, scope validation
+
+- **MCP Integration Testing**: Depends on [Context7 MCP Configuration, Documentation MCP Installation, Custom KellerAI MCP Development, Issue Tracking Integration]
+  - Purpose: Validate all MCP servers working correctly
+  - Provides: Context-enriched review validation
+
+### Quality Gate Layer (Phase 4)
+**Depends on:** PR Automation Layer, Context Enrichment Layer
+
+- **Built-in Checks Configuration**: Depends on [Central Configuration Repository]
+  - Purpose: Configure docstrings, PR format, issue assessment checks
+  - Provides: Basic quality gate enforcement
+
+- **Security Check Development**: Depends on [Custom KellerAI MCP Development]
+  - Purpose: Create security validation custom check
+  - Provides: Credential scanning, SQL injection detection
+
+- **Architecture Check Development**: Depends on [Custom KellerAI MCP Development]
+  - Purpose: Create architecture compliance custom check
+  - Provides: Layered architecture validation
+
+- **Test Coverage Check Development**: Depends on [Custom KellerAI MCP Development]
+  - Purpose: Create test coverage custom check
+  - Provides: New code test requirement enforcement
+
+- **Breaking Changes Check Development**: Depends on [Custom KellerAI MCP Development]
+  - Purpose: Create breaking changes documentation check
+  - Provides: CHANGELOG.md validation
+
+- **Performance Check Development**: Depends on [Custom KellerAI MCP Development]
+  - Purpose: Create performance impact assessment check
+  - Provides: N+1 query, algorithm complexity detection
+
+- **Request Changes Workflow Enablement**: Depends on [Built-in Checks Configuration, Security Check Development, Architecture Check Development, Test Coverage Check Development, Breaking Changes Check Development]
+  - Purpose: Enable PR blocking for failed error-mode checks
+  - Provides: Merge prevention for quality gate failures
+
+- **Quality Gate Validation**: Depends on [Request Changes Workflow Enablement, Performance Check Development]
+  - Purpose: Test all quality gates with real PRs
+  - Provides: Validated quality gate enforcement
+
+### Optimization Layer (Phase 5)
+**Depends on:** All previous layers
+
+- **Performance Metrics Collection**: Depends on [CLI Workflow Validation, Quality Gate Validation]
+  - Purpose: Gather review time, issue detection, satisfaction metrics
+  - Provides: Performance baseline data
+
+- **Learning Consolidation**: Depends on [PR Review Testing, MCP Integration Testing]
+  - Purpose: Review and consolidate repository learnings
+  - Provides: Refined review behavior
+
+- **Configuration Optimization**: Depends on [Performance Metrics Collection, Learning Consolidation]
+  - Purpose: Tune review scopes, caching, tool selection
+  - Provides: Optimized configuration for speed and accuracy
+
+- **Team Best Practices Documentation**: Depends on [Configuration Optimization]
+  - Purpose: Document proven patterns and workflows
+  - Provides: Team knowledge base
+
+- **Cross-repository Learning**: Depends on [Learning Consolidation]
+  - Purpose: Enable organization-wide learning across projects
+  - Provides: Consistent standards enforcement
+
+</dependency-graph>
+
+---
+
+<implementation-roadmap>
+
+## Development Phases
+
+### Phase 0: Prerequisites & Environment Setup
+**Goal:** Establish foundational accounts, access, and environment
+
+**Entry Criteria:** 
+- Executive approval for CodeRabbit Pro tier subscription
+- GitHub/GitLab organization admin access secured
+- Development team notified of upcoming integration
+
+**Tasks:**
+
+- [ ] **Secure CodeRabbit Account** (depends on: [none])
+  - Acceptance criteria: Pro tier account created, billing configured
+  - Test strategy: Verify account dashboard access, check billing status
+  - Estimated time: 1 hour
+  - Deliverable: Active CodeRabbit Pro account
+
+- [ ] **Verify GitHub/GitLab Admin Access** (depends on: [none])
+  - Acceptance criteria: Confirmed owner/admin permissions on organization
+  - Test strategy: Attempt to add GitHub app, verify permissions
+  - Estimated time: 30 minutes
+  - Deliverable: Admin access confirmation document
+
+- [ ] **Prepare Development Environment Standards** (depends on: [none])
+  - Acceptance criteria: Documented standard dev machine setup (Git, shell, terminal)
+  - Test strategy: Review with team, validate on sample machines
+  - Estimated time: 2 hours
+  - Deliverable: environment-setup.md documentation
+
+**Exit Criteria:** 
+- CodeRabbit Pro account active with billing configured
+- GitHub/GitLab admin access verified
+- Standard development environment documented
+
+**Delivers:** Foundation for all subsequent integration work
+
+---
+
+### Phase 1: PR Review Automation Foundation (Weeks 1-2)
+**Goal:** Establish core automated PR review capabilities
+
+**Entry Criteria:** Phase 0 complete
+
+**Tasks:**
+
+- [ ] **Install CodeRabbit App on Organization** (depends on: [Secure CodeRabbit Account, Verify GitHub/GitLab Admin Access])
+  - Acceptance criteria: CodeRabbit installed on GitHub/GitLab org, webhooks configured
+  - Test strategy: Create test PR, verify CodeRabbit comments appear
+  - Estimated time: 1 hour
+  - Deliverable: CodeRabbit app installed and operational
+
+- [ ] **Create Central Configuration Repository** (depends on: [Install CodeRabbit App on Organization])
+  - Acceptance criteria: kellerai/coderabbit repository created with .coderabbit.yaml
+  - Test strategy: Validate YAML syntax, verify CodeRabbit detects config
+  - Estimated time: 4 hours
+  - Deliverable: Central config repo with baseline settings
+  - Implementation notes:
+    ```yaml
+    # .coderabbit.yaml baseline
+    language: "en-US"
+    reviews:
+      profile: "chill"
+      high_level_summary: true
+      auto_review:
+        enabled: true
+        drafts: false
+    ```
+
+- [ ] **Populate Knowledge Base Files** (depends on: [Create Central Configuration Repository])
+  - Acceptance criteria: .cursorrules, CLAUDE.md, coding standards documented
+  - Test strategy: CodeRabbit references these files in PR reviews
+  - Estimated time: 6 hours
+  - Deliverable: Comprehensive knowledge base for CodeRabbit
+  - Implementation notes:
+    - Copy existing CLAUDE.md from projects
+    - Create .cursorrules with Python, TypeScript, naming conventions
+    - Document architectural patterns
+
+- [ ] **Configure Review Triggers and Notifications** (depends on: [Install CodeRabbit App on Organization])
+  - Acceptance criteria: Reviews trigger on PR create/update, Slack notifications configured
+  - Test strategy: Create/update test PRs, verify notifications
+  - Estimated time: 2 hours
+  - Deliverable: Automated review triggers and team notifications
+
+- [ ] **Train Team on @coderabbitai Commands** (depends on: [Configure Review Triggers and Notifications])
+  - Acceptance criteria: Team training session completed, command reference distributed
+  - Test strategy: Team members successfully use @coderabbitai commands in test PRs
+  - Estimated time: 2 hours (1 hour prep, 1 hour session)
+  - Deliverable: Team trained on interactive review commands
+
+- [ ] **Validate PR Review Quality** (depends on: [Populate Knowledge Base Files, Train Team on @coderabbitai Commands])
+  - Acceptance criteria: 10+ test PRs reviewed with acceptable quality (4/5 rating)
+  - Test strategy: Create diverse test PRs, gather team feedback on reviews
+  - Estimated time: 4 hours
+  - Deliverable: Baseline quality metrics, initial learnings captured
+
+**Exit Criteria:** 
+- CodeRabbit reviewing 100% of new PRs
+- Team using @coderabbitai commands successfully
+- Average review quality 4/5 or higher
+
+**Delivers:** Automated PR reviews with contextual feedback and team interaction
+
+---
+
+### Phase 2: CLI Integration & Autonomous Workflows (Weeks 3-4)
+**Goal:** Enable CLI-based reviews and autonomous implement-review-fix cycles
+
+**Entry Criteria:** Phase 1 complete
+
+**Tasks:**
+
+- [ ] **Develop CLI Installation Script** (depends on: [Prepare Development Environment Standards])
+  - Acceptance criteria: Bash script installs CLI on macOS/Linux, handles errors
+  - Test strategy: Run on clean machines, verify successful installation
+  - Estimated time: 3 hours
+  - Deliverable: install-cli.sh script
+  - Implementation notes:
+    ```bash
+    #!/bin/bash
+    curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+    source ~/.zshrc || source ~/.bashrc
+    coderabbit --version
+    ```
+
+- [ ] **Execute Team-wide CLI Installation** (depends on: [Develop CLI Installation Script])
+  - Acceptance criteria: All developers have CLI installed and functional
+  - Test strategy: Each developer runs `coderabbit --version` successfully
+  - Estimated time: 2 hours (support team during installation)
+  - Deliverable: CLI installed on all dev machines
+
+- [ ] **Authenticate Team with CodeRabbit** (depends on: [Execute Team-wide CLI Installation, Secure CodeRabbit Account])
+  - Acceptance criteria: All developers authenticated, tokens valid for 30 days
+  - Test strategy: Each developer runs `coderabbit auth status` - shows authenticated
+  - Estimated time: 1 hour
+  - Deliverable: Team authentication completed
+
+- [ ] **Document Claude Code Prompt Templates** (depends on: [Authenticate Team with CodeRabbit])
+  - Acceptance criteria: Markdown file with 5+ prompt templates for common workflows
+  - Test strategy: Claude Code successfully executes each template
+  - Estimated time: 4 hours
+  - Deliverable: claude-code-prompts.md
+  - Implementation notes:
+    - Template 1: Feature implementation with review
+    - Template 2: Bug fix with validation
+    - Template 3: Refactoring with quality checks
+    - Template 4: Architecture change with compliance
+    - Template 5: Security enhancement with scanning
+
+- [ ] **Create Pre-commit Git Hook (Optional)** (depends on: [Authenticate Team with CodeRabbit])
+  - Acceptance criteria: Git hook runs CLI review on staged files, allows override
+  - Test strategy: Stage files with issues, verify hook catches them
+  - Estimated time: 2 hours
+  - Deliverable: pre-commit hook script and installation guide
+
+- [ ] **Test Implement-Review-Fix Cycle with Claude Code** (depends on: [Document Claude Code Prompt Templates])
+  - Acceptance criteria: Claude Code successfully implements feature, runs review, fixes issues autonomously
+  - Test strategy: 3+ test features completed via autonomous workflow
+  - Estimated time: 6 hours
+  - Deliverable: Validated autonomous workflow
+
+- [ ] **Measure CLI Workflow Performance** (depends on: [Test Implement-Review-Fix Cycle with Claude Code, Create Pre-commit Git Hook])
+  - Acceptance criteria: Baseline metrics collected (review time, issue detection rate, fix time)
+  - Test strategy: Track 10+ CLI workflows, calculate averages
+  - Estimated time: Ongoing during testing
+  - Deliverable: CLI workflow performance report
+
+**Exit Criteria:** 
+- 50% of new features use CLI review workflow
+- Average review-to-fix time < 10 minutes
+- 90% of issues detected before PR creation
+
+**Delivers:** Autonomous AI workflows with CLI integration
+
+---
+
+### Phase 3: Context Enrichment via MCP Servers (Weeks 5-6)
+**Goal:** Enhance reviews with external context from multiple sources
+
+**Entry Criteria:** Phase 1 complete (MCP requires PR automation foundation)
+
+**Tasks:**
+
+- [ ] **Configure Context7 MCP Integration** (depends on: [Install CodeRabbit App on Organization])
+  - Acceptance criteria: Context7 connected in CodeRabbit dashboard, common libraries configured
+  - Test strategy: Review code using React/FastAPI, verify documentation references appear
+  - Estimated time: 2 hours
+  - Deliverable: Context7 MCP active with library list
+  - Implementation notes:
+    - Libraries: React, FastAPI, pytest, pandas, requests, express, axios
+    - Usage guidance: "Validate library API usage, check for deprecated methods"
+
+- [ ] **Select Documentation MCP (Confluence vs Notion)** (depends on: [Install CodeRabbit App on Organization])
+  - Acceptance criteria: Decision made based on existing tools and team preference
+  - Test strategy: Demo both options, gather team input
+  - Estimated time: 2 hours
+  - Deliverable: Documentation platform selection (recommend: Confluence for enterprise)
+
+- [ ] **Install Documentation MCP Server** (depends on: [Select Documentation MCP])
+  - Acceptance criteria: MCP server installed, authenticated, accessible spaces configured
+  - Test strategy: Search for known document, verify retrieval
+  - Estimated time: 3 hours
+  - Deliverable: Confluence or Notion MCP operational
+  - Implementation notes:
+    - If Confluence: Install @modelcontextprotocol/server-confluence
+    - Configure: Base URL, API token, space keys (ENG, TECH, ARCH)
+    - Test search: "architecture decision records"
+
+- [ ] **Develop Custom KellerAI Standards MCP Server** (depends on: [Populate Knowledge Base Files])
+  - Acceptance criteria: Python MCP server with 4 tools (get_standards, search_adr, get_preferences, check_pattern)
+  - Test strategy: Query each tool, verify responses match expected data
+  - Estimated time: 8 hours
+  - Deliverable: kellerai-standards-mcp server
+  - Implementation notes:
+    ```python
+    # Tools to implement:
+    # - get_coding_standards(category: str)
+    # - search_adr(query: str)
+    # - get_team_preferences()
+    # - check_pattern_approval(pattern: str)
+    ```
+
+- [ ] **Deploy Custom MCP Server** (depends on: [Develop Custom KellerAI Standards MCP Server])
+  - Acceptance criteria: Server running, accessible to CodeRabbit, responding to queries
+  - Test strategy: CodeRabbit calls each tool in test review
+  - Estimated time: 2 hours
+  - Deliverable: Deployed and operational custom MCP
+
+- [ ] **Integrate Issue Tracking (Jira or Linear)** (depends on: [Install CodeRabbit App on Organization])
+  - Acceptance criteria: Issue tracker connected, PRs link to issues, requirement validation working
+  - Test strategy: Create PR with issue link, verify validation appears
+  - Estimated time: 3 hours
+  - Deliverable: Issue tracking integration active
+
+- [ ] **Validate MCP Context in Reviews** (depends on: [Configure Context7 MCP Integration, Install Documentation MCP Server, Deploy Custom MCP Server, Integrate Issue Tracking])
+  - Acceptance criteria: Reviews reference MCP data 60%+ of time, context accuracy 4.5/5
+  - Test strategy: 20+ test PRs covering various scenarios, measure context usage
+  - Estimated time: 4 hours
+  - Deliverable: MCP validation report with metrics
+
+**Exit Criteria:** 
+- Reviews reference external documentation 60%+ of time
+- Issue tracking linked in 90%+ of PRs
+- Context accuracy rated 4.5/5 by team
+
+**Delivers:** Context-enriched reviews with access to documentation, standards, and issue tracking
+
+---
+
+### Phase 4: Quality Gates & Pre-merge Checks (Weeks 7-8)
+**Goal:** Enforce organizational standards through automated quality gates
+
+**Entry Criteria:** Phase 1 complete (requires PR automation), Phase 3 complete (custom checks need MCP)
+
+**Tasks:**
+
+- [ ] **Configure Built-in Quality Checks** (depends on: [Create Central Configuration Repository])
+  - Acceptance criteria: Docstrings (85%), PR title, description, issue assessment configured in .coderabbit.yaml
+  - Test strategy: Create PRs violating each check, verify detection
+  - Estimated time: 2 hours
+  - Deliverable: Built-in checks configuration
+  - Implementation notes:
+    ```yaml
+    pre_merge_checks:
+      docstrings:
+        mode: "warning"  # Start with warning
+        threshold: 85
+      title:
+        mode: "warning"
+      description:
+        mode: "error"
+      issue_assessment:
+        mode: "warning"
+    ```
+
+- [ ] **Create Security Validation Check** (depends on: [Deploy Custom MCP Server])
+  - Acceptance criteria: Custom check detects hardcoded credentials, SQL injection, sensitive data in logs
+  - Test strategy: PRs with security issues trigger error-mode failure
+  - Estimated time: 4 hours
+  - Deliverable: security.yaml custom check
+  - Implementation notes: Include patterns for password=, api_key=, SQL concatenation, eval()
+
+- [ ] **Create Architecture Compliance Check** (depends on: [Deploy Custom MCP Server])
+  - Acceptance criteria: Custom check validates layered architecture, dependency flow, DI patterns
+  - Test strategy: PRs violating architecture trigger warning
+  - Estimated time: 4 hours
+  - Deliverable: architecture.yaml custom check
+  - Implementation notes: Check controller→service→repository flow, no business logic in controllers
+
+- [ ] **Create Test Coverage Check** (depends on: [Deploy Custom MCP Server])
+  - Acceptance criteria: Custom check ensures new functions have tests, bug fixes have regression tests
+  - Test strategy: PR with untested function triggers error
+  - Estimated time: 3 hours
+  - Deliverable: testing.yaml custom check
+
+- [ ] **Create Breaking Changes Documentation Check** (depends on: [Deploy Custom MCP Server])
+  - Acceptance criteria: Custom check detects API signature changes, requires CHANGELOG.md documentation
+  - Test strategy: Breaking change without docs triggers error
+  - Estimated time: 4 hours
+  - Deliverable: breaking-changes.yaml custom check
+
+- [ ] **Create Performance Impact Assessment Check** (depends on: [Deploy Custom MCP Server])
+  - Acceptance criteria: Custom check flags N+1 queries, algorithm complexity, missing indexes
+  - Test strategy: PR with N+1 query triggers warning with recommendation
+  - Estimated time: 3 hours
+  - Deliverable: performance.yaml custom check
+
+- [ ] **Enable Request Changes Workflow** (depends on: [Configure Built-in Quality Checks, Create Security Validation Check, Create Architecture Compliance Check, Create Test Coverage Check, Create Breaking Changes Documentation Check])
+  - Acceptance criteria: Error-mode check failures block PR merge via GitHub/GitLab status
+  - Test strategy: PR with critical issue shows "Changes requested" status, blocks merge
+  - Estimated time: 1 hour
+  - Deliverable: Request changes workflow enabled
+  - Implementation notes: Add `request_changes_workflow: true` to .coderabbit.yaml
+
+- [ ] **Document Check Override Process** (depends on: [Enable Request Changes Workflow])
+  - Acceptance criteria: Override process documented, team trained on `@coderabbitai ignore` command
+  - Test strategy: Team member successfully overrides check with justification
+  - Estimated time: 2 hours
+  - Deliverable: override-process.md documentation
+
+- [ ] **Validate Quality Gates with Real PRs** (depends on: [Create Performance Impact Assessment Check, Document Check Override Process])
+  - Acceptance criteria: 20+ real PRs tested, 95% compliance rate, zero false negatives for critical checks
+  - Test strategy: Diverse PR scenarios covering all check types
+  - Estimated time: 6 hours
+  - Deliverable: Quality gate validation report
+
+- [ ] **Switch Critical Checks to Error Mode** (depends on: [Validate Quality Gates with Real PRs])
+  - Acceptance criteria: Security, breaking changes, test coverage checks in error mode
+  - Test strategy: Verify PRs blocked for critical failures
+  - Estimated time: 1 hour
+  - Deliverable: Production-ready quality gates
+
+**Exit Criteria:** 
+- 95% PR compliance with quality gates
+- 50% reduction in production bugs (measured over 4 weeks)
+- Zero breaking changes without documentation
+
+**Delivers:** Automated quality gates enforcing organizational standards
+
+---
+
+### Phase 5: Optimization & Continuous Improvement (Weeks 9+)
+**Goal:** Fine-tune integration for optimal performance and team satisfaction
+
+**Entry Criteria:** All previous phases complete
+
+**Tasks:**
+
+- [ ] **Collect Performance Baseline Metrics** (depends on: [Validate Quality Gates with Real PRs, Measure CLI Workflow Performance])
+  - Acceptance criteria: 4 weeks of data collected (review time, issue detection, satisfaction)
+  - Test strategy: Automated metrics collection from CodeRabbit API and team surveys
+  - Estimated time: Ongoing, 2 hours analysis
+  - Deliverable: Performance baseline report
+
+- [ ] **Review and Consolidate Learnings** (depends on: [Validate MCP Context in Reviews, Validate PR Review Quality])
+  - Acceptance criteria: Repository learnings reviewed, duplicates merged, outdated removed
+  - Test strategy: Sample reviews show consistent application of learnings
+  - Estimated time: 4 hours
+  - Deliverable: Consolidated learning database
+
+- [ ] **Optimize Review Scopes and Caching** (depends on: [Collect Performance Baseline Metrics])
+  - Acceptance criteria: Review time reduced by 20% via scope/cache optimization
+  - Test strategy: Before/after performance comparison
+  - Estimated time: 4 hours
+  - Deliverable: Optimized configuration with caching
+
+- [ ] **Fine-tune MCP Tool Selection** (depends on: [Validate MCP Context in Reviews])
+  - Acceptance criteria: MCP tools called only when relevant, no redundant queries
+  - Test strategy: MCP call logs show appropriate usage patterns
+  - Estimated time: 3 hours
+  - Deliverable: Tuned MCP tool selection rules
+
+- [ ] **Enable Cross-repository Learning** (depends on: [Review and Consolidate Learnings])
+  - Acceptance criteria: Organization-wide learnings applied across all repos
+  - Test strategy: Learning from repo A appears in repo B reviews
+  - Estimated time: 2 hours
+  - Deliverable: Cross-repo learning enabled
+
+- [ ] **Create Performance Metrics Dashboard** (depends on: [Collect Performance Baseline Metrics])
+  - Acceptance criteria: Real-time dashboard showing review time, issue detection, satisfaction
+  - Test strategy: Dashboard updates with new data, accessible to team
+  - Estimated time: 6 hours
+  - Deliverable: Grafana/similar dashboard
+
+- [ ] **Document Team Best Practices** (depends on: [Optimize Review Scopes and Caching, Fine-tune MCP Tool Selection])
+  - Acceptance criteria: Best practices documented based on real usage patterns
+  - Test strategy: New team member successfully follows best practices
+  - Estimated time: 4 hours
+  - Deliverable: team-best-practices.md
+
+- [ ] **Conduct Retrospective and Plan Improvements** (depends on: [Create Performance Metrics Dashboard, Document Team Best Practices])
+  - Acceptance criteria: Team retrospective completed, improvement backlog created
+  - Test strategy: Action items from retrospective assigned and tracked
+  - Estimated time: 2 hours
+  - Deliverable: Retrospective notes and improvement plan
+
+**Exit Criteria:** 
+- Average review time < 5 minutes
+- Developer satisfaction 4.5/5 or higher
+- 70% reduction in manual review comments
+
+**Delivers:** Optimized, production-grade CodeRabbit integration with continuous improvement process
+
+</implementation-roadmap>
+
+---
+
+<test-strategy>
+
+## Test Pyramid
+
+```
+        /\
+       /E2E\       ← 10% (End-to-end integration tests)
+      /------\
+     / Integ. \ ← 30% (Component integration tests)
+    /----------\
+   /   Unit     \ ← 60% (Validation and configuration tests)
+  /--------------\
+```
+
+## Coverage Requirements
+
+- **Configuration Validation:** 100% (all YAML validated, no syntax errors)
+- **MCP Server Endpoints:** 90% (all tools tested with valid/invalid inputs)
+- **Custom Check Logic:** 85% (all pass/fail scenarios tested)
+- **CLI Workflows:** 80% (common workflows and error cases)
+
+## Critical Test Scenarios
+
+### PR Review Automation
+
+**Happy path:**
+- PR created → CodeRabbit reviews within 5 minutes → Posts structured feedback
+- Expected: Review comments appear, summary generated, issues categorized by severity
+
+**Edge cases:**
+- Very large PR (1000+ lines) → Review completes without timeout
+- PR with no changes → CodeRabbit acknowledges, no false positives
+- Draft PR → Review skipped (if drafts disabled)
+
+**Error cases:**
+- Invalid .coderabbit.yaml syntax → CodeRabbit posts error comment with syntax issue
+- CodeRabbit app not installed → Graceful failure with installation instructions
+- Webhook delivery failure → Retry mechanism succeeds on second attempt
+
+**Integration points:**
+- Knowledge base files → Review references .cursorrules and CLAUDE.md guidance
+- Issue tracking → PR linked to issue, validation report appears
+- MCP servers → Review includes external context from MCP
+
+### CLI Integration
+
+**Happy path:**
+- `coderabbit --type uncommitted` → Analyzes working directory → Returns findings in 2-5 minutes
+- Claude Code runs `coderabbit --prompt-only` → Parses output → Fixes issues → Re-runs review
+- Expected: Autonomous implement-review-fix cycle completes without human intervention
+
+**Edge cases:**
+- No git changes → CLI reports "No changes detected"
+- Very large diff → CLI completes review but may take 15-30 minutes
+- Background execution → CLI runs without blocking other terminal commands
+
+**Error cases:**
+- CLI not authenticated → Error with `coderabbit auth login` instructions
+- Invalid command options → Help text displayed with correct syntax
+- CodeRabbit service down → Timeout with retry suggestion
+
+**Integration points:**
+- Git hooks → Pre-commit hook runs CLI, allows override if needed
+- Claude Code → Prompt templates successfully trigger autonomous workflows
+- CI/CD → CLI runs in GitHub Actions, posts results as comment
+
+### MCP Server Integration
+
+**Happy path:**
+- Review detects React import → Queries Context7 → Returns React documentation → References in comment
+- Review finds architectural question → Queries custom KellerAI MCP → Returns ADR → Includes in feedback
+- Expected: External context seamlessly integrated into review
+
+**Edge cases:**
+- MCP server slow (>5s response) → Review continues, context marked as "pending"
+- Multiple MCP queries needed → All execute in parallel for speed
+- MCP server returns no results → Review continues without context, notes unavailability
+
+**Error cases:**
+- MCP server unreachable → Review continues, logs error, notifies admin
+- MCP server returns malformed data → Review ignores, logs error for investigation
+- Authentication expired → Review attempts refresh, falls back to no context
+
+**Integration points:**
+- Context7 → Library documentation appears in reviews referencing those libraries
+- Documentation MCP → ADRs and design docs referenced when relevant
+- Custom MCP → Standards validation integrated into review feedback
+
+### Pre-merge Check Validation
+
+**Happy path:**
+- All checks pass → PR shows green checkmark → Merge allowed
+- One warning-mode check fails → Warning displayed → Merge allowed
+- Expected: Quality gates enforce standards without blocking unnecessarily
+
+**Edge cases:**
+- Check marked "off" → Skipped, no impact on merge
+- Override command used → Checks ignored, override noted in PR
+- Multiple checks fail → All failures listed with specific remediation
+
+**Error cases:**
+- Check instructions unclear → CodeRabbit requests clarification, check marked inconclusive
+- Check infinite loop (bad regex) → Timeout after 30s, check marked failed
+- Check validation error → Error logged, check disabled automatically
+
+**Integration points:**
+- Request changes workflow → Error-mode failures block merge via GitHub/GitLab
+- Custom MCP → Checks query standards and ADRs for validation
+- Knowledge base → Checks reference documented exemptions
+
+## Test Generation Guidelines
+
+All integration tests should follow this pattern:
+
+```python
+def test_integration_<component>_<scenario>_<expected>():
+    """
+    Test <component> integration with <dependency> when <scenario>.
+    
+    Expected behavior: <expected outcome>
+    """
+    # Arrange: Set up test data and preconditions
+    
+    # Act: Execute the integration
+    
+    # Assert: Verify expected outcomes
+    
+    # Cleanup: Reset state for next test
+```
+
+**Example:**
+```python
+def test_integration_pr_review_with_mcp_context_includes_adr_reference():
+    """
+    Test PR review integration with custom MCP when architectural change detected.
+    
+    Expected behavior: Review comment references relevant ADR from MCP.
+    """
+    # Arrange
+    pr = create_test_pr_with_architectural_change()
+    mcp_server = mock_kellerai_mcp_with_adr_database()
+    
+    # Act
+    review_result = coderabbit.review_pr(pr, mcp_servers=[mcp_server])
+    
+    # Assert
+    assert "ADR-042" in review_result.comments
+    assert "database access patterns" in review_result.context
+    
+    # Cleanup
+    delete_test_pr(pr)
+```
+
+## Validation Checkpoints
+
+Each phase includes validation tasks that must pass before proceeding:
+
+**Phase 1 Validation:**
+- 10+ test PRs reviewed with 4/5 quality rating
+- Team successfully uses @coderabbitai commands
+- Knowledge base files referenced in reviews
+
+**Phase 2 Validation:**
+- 3+ autonomous workflows complete end-to-end
+- CLI installed and authenticated on all dev machines
+- Average review time < 10 minutes for uncommitted changes
+
+**Phase 3 Validation:**
+- 20+ test PRs show MCP context usage 60%+ of time
+- All 4 MCP servers respond to test queries
+- Context accuracy rated 4.5/5 by team
+
+**Phase 4 Validation:**
+- 20+ test PRs validate all quality gates
+- Error-mode failures successfully block merge
+- 95% compliance rate achieved
+
+**Phase 5 Validation:**
+- 4 weeks of performance data collected
+- Review time reduced to < 5 minutes average
+- Team satisfaction 4.5/5 or higher
+
+</test-strategy>
+
+---
+
+<architecture>
+
+## System Components
+
+### CodeRabbit Platform (External SaaS)
+- **Responsibility:** Core AI-powered code review engine
+- **Interfaces:** REST API, GitHub/GitLab webhooks, CLI, VSCode extension
+- **Data Flow:** Receives code diffs → Analyzes via LLM → Returns structured feedback
+- **Scalability:** SaaS provider handles scaling, rate limits apply per plan tier
+
+### Central Configuration Repository (kellerai/coderabbit)
+- **Responsibility:** Organization-wide baseline CodeRabbit settings
+- **Structure:** Git repository with .coderabbit.yaml, docs, templates
+- **Versioning:** Git-based versioning of configuration changes
+- **Distribution:** Automatic inheritance by repos without local config
+
+### MCP Server Infrastructure
+- **Context7:** Pre-built SaaS MCP for library documentation
+- **Confluence/Notion:** Official MCP servers for internal docs
+- **Custom KellerAI MCP:** Python server for organizational standards
+- **Communication:** RESTful MCP protocol, JSON payloads
+- **Hosting:** Custom MCP self-hosted on KellerAI infrastructure
+
+### CLI Integration Layer
+- **CodeRabbit CLI:** Terminal-based review tool (installed locally)
+- **Git Hooks:** Optional pre-commit validation scripts
+- **Claude Code Interface:** Prompt templates for autonomous workflows
+- **Execution Model:** Foreground (interactive) or background (non-blocking)
+
+### Quality Gate Enforcement System
+- **Built-in Checks:** CodeRabbit native validation (docstrings, PR format)
+- **Custom Checks:** Natural language validation logic (security, architecture, testing)
+- **Enforcement Engine:** Request Changes workflow for blocking PRs
+- **Override Mechanism:** @coderabbitai ignore command with justification
+
+## Data Models
+
+### Review Context Object
+```yaml
+review_context:
+  repository: "kellerai/project-a"
+  pr_number: 123
+  base_branch: "main"
+  head_branch: "feature/user-auth"
+  files_changed: 12
+  lines_added: 456
+  lines_deleted: 89
+  linked_issues: ["AUTH-123"]
+  knowledge_base:
+    - ".cursorrules"
+    - "CLAUDE.md"
+  mcp_context:
+    - source: "Context7"
+      library: "fastapi"
+      version: "0.100.0"
+    - source: "KellerAI MCP"
+      standards: "security.yaml"
+  author: "developer@kellerai.com"
+  reviewers: ["tech-lead@kellerai.com"]
+```
+
+### Pre-merge Check Result
+```yaml
+check_result:
+  check_name: "Security Validation"
+  mode: "error"
+  status: "failed"
+  findings:
+    - severity: "critical"
+      issue: "Hardcoded API key detected"
+      file: "src/config.py"
+      line: 15
+      recommendation: "Move to environment variable"
+    - severity: "high"
+      issue: "SQL injection vulnerability"
+      file: "src/queries.py"
+      line: 42
+      recommendation: "Use parameterized query"
+  can_merge: false
+  override_available: true
+```
+
+### MCP Query/Response
+```yaml
+mcp_query:
+  tool: "get_coding_standards"
+  parameters:
+    category: "security"
+  server: "kellerai-standards-mcp"
+
+mcp_response:
+  status: "success"
+  data:
+    authentication:
+      method: "JWT tokens"
+      algorithm: "HS256"
+    passwords:
+      hashing: "bcrypt"
+    api_keys:
+      storage: "environment variables only"
+  latency_ms: 234
+```
+
+## Technology Stack
+
+### Core Platform
+- **CodeRabbit:** AI code review SaaS (Pro tier)
+- **Git Platform:** GitHub or GitLab (primary targets)
+- **LLM:** CodeRabbit proprietary models (GPT-4 class)
+
+### MCP Ecosystem
+- **MCP Protocol:** Model Context Protocol specification
+- **Context7:** Pre-built library documentation MCP
+- **Confluence MCP:** @modelcontextprotocol/server-confluence (Node.js)
+- **Notion MCP:** @modelcontextprotocol/server-notion (Node.js)
+- **Custom MCP:** Python 3.11+ with mcp package
+
+### CLI & Automation
+- **CodeRabbit CLI:** Pre-built binary (cross-platform)
+- **Claude Code:** AI coding assistant with CLI access
+- **Git Hooks:** Bash scripts for pre-commit validation
+- **TaskMaster AI:** Task management and PRD parsing (Node.js)
+
+### Configuration & Documentation
+- **YAML:** Configuration file format (.coderabbit.yaml)
+- **Markdown:** Documentation and knowledge base
+- **Git:** Version control for all configurations
+
+## Key Design Decisions
+
+### Decision: Central Configuration Repository Pattern
+**Rationale:** 
+- Single source of truth for organization-wide standards
+- Reduces configuration duplication across 50+ repositories
+- Version-controlled changes with full audit trail
+- Easy to update standards across entire organization
+
+**Trade-offs:**
+- Repositories lose some autonomy (mitigated by override capability)
+- Central repo becomes critical dependency (mitigated by git's distributed nature)
+- Changes affect all repos (mitigated by testing and gradual rollout)
+
+**Alternatives considered:**
+- Individual repo configs (rejected: too much duplication, inconsistent standards)
+- UI-only settings (rejected: not version controlled, harder to review changes)
+- Monorepo with shared config (rejected: organizational structure doesn't support)
+
+### Decision: MCP for Context Enrichment vs Direct API Integration
+**Rationale:**
+- MCP provides standardized protocol for multiple sources
+- Easier to add new context sources over time
+- CodeRabbit native MCP support reduces integration complexity
+- Future-proof as MCP ecosystem grows
+
+**Trade-offs:**
+- MCP adds dependency on MCP server availability (mitigated by graceful fallback)
+- Custom MCP requires hosting infrastructure (minimal cost)
+- Learning curve for MCP development (offset by comprehensive docs)
+
+**Alternatives considered:**
+- Direct API calls to each service (rejected: more complex, harder to maintain)
+- Webhook-based integration (rejected: higher latency, more failure modes)
+- Embedded context in git repo (rejected: doesn't scale, stale data risk)
+
+### Decision: Phased Rollout Over Big Bang Launch
+**Rationale:**
+- Reduces risk of integration issues affecting all teams
+- Allows learning and adjustment between phases
+- Easier to gather feedback and optimize before full deployment
+- Teams can adopt at their own pace within phase timelines
+
+**Trade-offs:**
+- Longer overall timeline (10+ weeks vs 2-3 weeks big bang)
+- Inconsistent experience during transition (mitigated by clear communication)
+- Parallel maintenance of old and new processes briefly (acceptable temporary cost)
+
+**Alternatives considered:**
+- Big bang launch (rejected: too risky, hard to roll back)
+- Per-team rollout (rejected: creates organizational silos, inconsistent experience)
+- Features-as-available (rejected: unclear completion criteria, confusing for users)
+
+### Decision: Warning Mode First, Error Mode After Validation
+**Rationale:**
+- Prevents team frustration from false positives blocking work
+- Allows refinement of check logic based on real data
+- Builds team trust in automated checks gradually
+- Easier to get buy-in when checks are informational initially
+
+**Trade-offs:**
+- Quality gates not fully enforced during Phase 4 (acceptable for 1-2 weeks)
+- Some PRs may merge with issues during warning period (monitored and tracked)
+- Two-step configuration change (warning → error mode) adds tasks
+
+**Alternatives considered:**
+- Error mode from start (rejected: high risk of false positives, team pushback)
+- Warning mode permanently (rejected: defeats purpose of quality gates)
+- Per-check decision on mode (rejected: too complex, inconsistent experience)
+
+### Decision: Claude Code as Primary AI Workflow vs Other Tools
+**Rationale:**
+- Claude Code has direct CLI access for running CodeRabbit
+- Strong support for background execution and prompt parsing
+- Already in use at KellerAI (no new tool adoption required)
+- Excellent at parsing AI-optimized output (--prompt-only mode)
+
+**Trade-offs:**
+- Vendor lock-in to Anthropic ecosystem (mitigated by standard CLI, works with other tools)
+- Requires Claude Code subscription per developer (already have)
+- Less IDE integration than Cursor/Windsurf (acceptable for workflow-focused tasks)
+
+**Alternatives considered:**
+- GitHub Copilot (rejected: no CLI access, limited autonomous capabilities)
+- Cursor/Windsurf (considered as complement, not replacement - team can use both)
+- Custom automation scripts (rejected: reinventing wheel, Claude Code superior)
+
+</architecture>
+
+---
+
+<risks>
+
+## Technical Risks
+
+### Risk: CodeRabbit Review Quality Below Expectations
+- **Impact:** High - Low-quality reviews frustrate team, reduce adoption
+- **Likelihood:** Medium - AI can have false positives, misunderstand context
+- **Mitigation:**
+  - Start with "chill" review profile (fewer, higher-confidence comments)
+  - Invest heavily in knowledge base (CLAUDE.md, .cursorrules, standards)
+  - Use MCP servers to provide additional context
+  - Iterative learning via @coderabbitai commands to train AI
+  - Phase 1 includes 10+ test PRs with quality validation (4/5 minimum)
+- **Fallback:** 
+  - Adjust review profile to less aggressive settings
+  - Disable specific checks that generate false positives
+  - Supplement with manual code review in critical areas
+  - Escalate persistent quality issues to CodeRabbit support
+
+### Risk: MCP Server Downtime or Slow Response
+- **Impact:** Medium - Reviews lack context, may miss important standards
+- **Likelihood:** Low - MCP servers relatively simple, low failure rate
+- **Mitigation:**
+  - Implement graceful degradation (reviews continue without MCP context)
+  - Set MCP timeout to 5 seconds (don't block reviews waiting for context)
+  - Monitor MCP server health and response times
+  - Custom MCP hosted on reliable infrastructure with monitoring
+  - Context7 is SaaS with high availability
+- **Fallback:**
+  - Reviews proceed without MCP context (still valuable)
+  - Notification sent to admin for investigation
+  - Cached MCP responses used when available
+  - Manual review prioritized when MCP context critical
+
+### Risk: CLI Installation or Authentication Failures
+- **Impact:** Medium - Developers can't use autonomous workflows or pre-commit hooks
+- **Likelihood:** Medium - Installation works on most systems but edge cases exist
+- **Mitigation:**
+  - Test installation script on multiple OS versions before rollout
+  - Provide troubleshooting guide for common issues
+  - Dedicated support channel during Phase 2 rollout
+  - Fall back to PR reviews if CLI unavailable
+  - Document system requirements clearly upfront
+- **Fallback:**
+  - Developers use PR reviews exclusively (still valuable)
+  - IT support helps troubleshoot installation issues
+  - Alternative authentication methods (API token fallback)
+  - Containerized CLI environment as last resort
+
+### Risk: Pre-merge Check False Positives Block Valid PRs
+- **Impact:** High - Team frustrated, productivity decreased, checks disabled
+- **Likelihood:** Medium - Custom checks use heuristics, may misclassify
+- **Mitigation:**
+  - Start ALL checks in warning mode during Phase 4
+  - Validate with 20+ diverse test PRs before error mode
+  - Clear documentation on override process with justification
+  - Iterative refinement based on false positive reports
+  - Regular review of override usage to identify check issues
+- **Fallback:**
+  - Quickly switch problematic checks to warning or off mode
+  - Refine check logic based on false positive analysis
+  - Provide team training on override with justification
+  - Tech lead approval for security/breaking change overrides
+
+### Risk: Integration Complexity Leads to Extended Timeline
+- **Impact:** Medium - Delayed value delivery, potential scope creep
+- **Likelihood:** Medium - 5 phases with many dependencies, unforeseen issues likely
+- **Mitigation:**
+  - Detailed dependency graph prevents starting tasks prematurely
+  - Each phase has clear entry/exit criteria and validation
+  - Buffer time built into estimates (conservative timelines)
+  - Weekly progress reviews to catch delays early
+  - Prioritize most valuable features (PR automation) in Phase 1
+- **Fallback:**
+  - Descope optional features (git hooks, optional checks)
+  - Extend timelines if needed (quality over speed)
+  - Bring in additional resources for bottlenecks
+  - Deliver phases incrementally (Phase 1-3 provide 80% of value)
+
+## Organizational Risks
+
+### Risk: Low Team Adoption and Usage
+- **Impact:** High - Investment wasted, goals not achieved
+- **Likelihood:** Medium - Change management challenge, learning curve
+- **Mitigation:**
+  - Executive sponsorship and clear communication of benefits
+  - Early involvement of tech leads and influential developers
+  - Comprehensive training (Phase 1, 2, 3, 4 include training tasks)
+  - Celebrate early wins and share success stories
+  - Gather and act on feedback quickly
+  - Make it easy to use (clear docs, prompt templates, support)
+- **Fallback:**
+  - Pilot with enthusiastic volunteers first, expand after success
+  - Identify and address specific adoption barriers (training, tooling)
+  - Adjust configuration based on team feedback
+  - Consider incentives for early adopters (recognition, time savings)
+
+### Risk: Resistance to AI-Based Code Review
+- **Impact:** Medium - Team skepticism, reluctance to trust AI feedback
+- **Likelihood:** Low-Medium - Some developers prefer human-only review
+- **Mitigation:**
+  - Emphasize AI as augmentation, not replacement of human review
+  - Show examples of issues AI catches that humans miss
+  - Transparent about AI limitations (false positives expected)
+  - Human reviewers always have final say
+  - Tech lead endorsement and modeling of good usage
+- **Fallback:**
+  - Make CodeRabbit optional for resistant team members initially
+  - Pair skeptics with advocates to see benefits firsthand
+  - Focus on time savings and reduced review burden (quantify)
+  - Address specific concerns through education
+
+### Risk: Over-reliance on Automation Reduces Human Review Quality
+- **Impact:** Medium - Human reviewers become less engaged, miss nuanced issues
+- **Likelihood:** Low - Strong code review culture at KellerAI
+- **Mitigation:**
+  - Training emphasizes AI finds mechanical issues, humans focus on design/architecture
+  - CodeRabbit feedback labeled as "AI suggestions" (human judgment required)
+  - Maintain human review requirement for all PRs (AI is first pass)
+  - Regular retrospectives on review quality
+- **Fallback:**
+  - Adjust PR templates to explicitly require human reviewer attention to specific areas
+  - Rotate human reviewers to keep engagement high
+  - Metrics track both AI and human review effectiveness
+
+### Risk: Cost Overruns from Higher Usage Than Expected
+- **Impact:** Low - Budget exceeded, may need to reduce usage or seats
+- **Likelihood:** Low - Pro tier has predictable per-seat pricing
+- **Mitigation:**
+  - Budget for 10% more seats than current team size (growth buffer)
+  - Monitor usage monthly and adjust if needed
+  - Set up billing alerts at 80% and 100% of budget
+  - ROI so strong ($23,200/month profit) that cost increases acceptable
+- **Fallback:**
+  - Reduce to most critical repositories if budget tight
+  - Negotiate enterprise pricing if usage very high
+  - Re-evaluate ROI and adjust budget if needed
+
+## Security & Compliance Risks
+
+### Risk: Sensitive Code or Data Exposed to CodeRabbit (Third Party)
+- **Impact:** High - Data breach, compliance violation, loss of IP
+- **Likelihood:** Very Low - CodeRabbit SOC 2 Type II certified
+- **Mitigation:**
+  - Review CodeRabbit security certifications (SOC 2, GDPR)
+  - Configure data retention policies appropriately
+  - Use knowledge_base.opt_out if data sensitivity very high
+  - Legal/security team review before production deployment
+  - Private repos on Pro tier have additional protections
+- **Fallback:**
+  - Limit CodeRabbit to non-sensitive repositories initially
+  - Use self-hosted CodeRabbit Enterprise if sensitivity extreme
+  - Implement additional access controls and auditing
+
+### Risk: API Keys or Secrets Leaked Through Configuration Files
+- **Impact:** Medium - Unauthorized access to CodeRabbit, MCP servers
+- **Likelihood:** Low - Keys stored in environment variables, not git
+- **Mitigation:**
+  - All keys in .env (gitignored), never in .yaml or code
+  - Rotate keys every 30 days proactively
+  - Use service accounts with minimal required permissions
+  - Monitor key usage for anomalies
+- **Fallback:**
+  - Immediate key rotation if leak detected
+  - Audit access logs for unauthorized usage
+  - Implement IP whitelisting where possible
+
+### Risk: Custom MCP Server Vulnerabilities
+- **Impact:** Medium - Unauthorized access to organizational standards/ADRs
+- **Likelihood:** Low - Simple read-only server, limited attack surface
+- **Mitigation:**
+  - Code review for custom MCP before deployment
+  - Read-only data access (MCP never writes)
+  - Input validation on all tool parameters
+  - Regular security updates for dependencies
+  - Host on internal network with firewall rules
+- **Fallback:**
+  - Disable custom MCP if vulnerability discovered
+  - Incident response plan for security issues
+  - Fall back to knowledge base files only
+
+### Risk: Malicious Code Injected via @coderabbitai Commands
+- **Impact:** Low - AI could be prompted to generate harmful suggestions
+- **Likelihood:** Very Low - CodeRabbit has prompt injection protections
+- **Mitigation:**
+  - Team training on responsible @coderabbitai usage
+  - Monitor command usage for anomalies
+  - CodeRabbit's built-in safety filters
+- **Fallback:**
+  - Restrict @coderabbitai command usage if abused
+  - Review and revert malicious suggestions in PRs
+
+## Dependency Risks
+
+### Risk: CodeRabbit Service Outage
+- **Impact:** High - No PR reviews during outage
+- **Likelihood:** Low - SaaS provider, high availability expected
+- **Mitigation:**
+  - CodeRabbit SLA guarantees uptime (Pro tier)
+  - Human reviewers continue working during outage
+  - CLI can still run (may have degraded features)
+- **Fallback:**
+  - Temporary return to human-only review
+  - Queue PRs for review when service returns
+  - Escalate to CodeRabbit support for extended outages
+
+### Risk: GitHub/GitLab API Changes Break Integration
+- **Impact:** Medium - Webhook failures, review comments fail to post
+- **Likelihood:** Low - Stable APIs, CodeRabbit handles updates
+- **Mitigation:**
+  - CodeRabbit team monitors platform API changes
+  - Test integration after major GitHub/GitLab updates
+- **Fallback:**
+  - CodeRabbit support handles API compatibility
+  - Use CLI as temporary workaround if webhooks broken
+
+### Risk: Claude Code Compatibility Issues with CLI
+- **Impact:** Low - Autonomous workflows don't work as expected
+- **Likelihood:** Low - Standard CLI tool, well-supported
+- **Mitigation:**
+  - Test Claude Code integration thoroughly in Phase 2
+  - Document exact prompt patterns that work
+  - Provide fallback manual CLI workflow
+- **Fallback:**
+  - Developers run CLI manually instead of via Claude Code
+  - Explore alternative AI assistants (Cursor, Windsurf)
+  - Direct shell script automation if needed
+
+### Risk: MCP Protocol Changes or Deprecation
+- **Impact:** Medium - Context enrichment broken, MCP servers need rewrite
+- **Likelihood:** Very Low - MCP is new but designed for stability
+- **Mitigation:**
+  - Use stable MCP protocol version
+  - Monitor MCP community for breaking changes
+  - CodeRabbit announces MCP changes with migration guides
+- **Fallback:**
+  - Temporary context loss while MCP updated
+  - Fall back to knowledge base files only
+  - Re-implement context via alternative methods if MCP deprecated
+
+## Mitigation Strategy Summary
+
+**Risk Management Approach:**
+1. **Prevention:** Mitigate high-likelihood or high-impact risks proactively
+2. **Detection:** Monitor for risk indicators throughout implementation
+3. **Response:** Clear fallback plans for all critical risks
+4. **Learning:** Retrospectives after each phase to identify new risks
+
+**Risk Review Cadence:**
+- Weekly during implementation (Phases 1-4)
+- Monthly after production deployment (Phase 5+)
+- Immediate review if critical risk materializes
+
+**Risk Escalation:**
+- Technical Lead: Handles technical and organizational risks
+- Security Team: Handles security and compliance risks
+- Executive Sponsor: Handles cost overruns and adoption risks
+
+</risks>
+
+---
+
+<appendix>
+
+## References
+
+### CodeRabbit Documentation
+- Configuration Reference: https://docs.coderabbit.ai/reference/configuration
+- Central Configuration: https://docs.coderabbit.ai/configuration/central-configuration
+- CLI Documentation: https://docs.coderabbit.ai/cli
+- MCP Integration: https://docs.coderabbit.ai/integrations/mcp
+- Pre-merge Checks: https://docs.coderabbit.ai/features/pre-merge-checks
+
+### MCP Resources
+- Model Context Protocol Spec: https://modelcontextprotocol.io
+- MCP Python SDK: https://github.com/modelcontextprotocol/python-sdk
+- Confluence MCP: https://github.com/modelcontextprotocol/servers/tree/main/src/confluence
+- Notion MCP: https://github.com/modelcontextprotocol/servers/tree/main/src/notion
+
+### Related Tools
+- Claude Code Documentation: https://docs.anthropic.com/claude-code
+- TaskMaster AI: https://github.com/coleam00/task-master-ai
+- Context7: https://context7.ai
+
+### Internal Documentation
+- KellerAI Architecture Standards: `docs/architecture/integration-overview.md`
+- Central Configuration Guide: `docs/architecture/central-config.md`
+- CLI Workflows: `docs/workflows/cli-integration.md`
+- Pre-merge Checks Spec: `docs/quality-gates/premerge-checks.md`
+- MCP Setup Guide: `docs/architecture/mcp-servers.md`
+
+## Glossary
+
+**ADR (Architecture Decision Record):** Document capturing important architectural decision with context, options, and rationale
+
+**Central Configuration Repository:** Special repository (kellerai/coderabbit) containing organization-wide default CodeRabbit settings
+
+**Context Enrichment:** Process of adding external context (docs, standards, ADRs) to code reviews via MCP servers
+
+**Custom Check:** Organization-specific quality gate defined in natural language, enforced pre-merge
+
+**Knowledge Base:** Collection of files (.cursorrules, CLAUDE.md, standards) CodeRabbit uses for contextual reviews
+
+**MCP (Model Context Protocol):** Standardized protocol for connecting AI systems to external data sources
+
+**Pre-merge Check:** Automated validation that runs before PR merge, can block merge if fails (error mode)
+
+**Request Changes Workflow:** GitHub/GitLab feature where CodeRabbit marks PR as "Changes requested" to block merge
+
+**Review Profile:** CodeRabbit setting controlling review intensity (chill = fewer comments, assertive = thorough)
+
+**RPG Method:** Repository Planning Graph methodology for structuring PRDs with explicit dependencies
+
+**Scope Validation:** Process of checking if PR changes align with linked issue requirements
+
+**@coderabbitai Command:** Interactive command in PR comments to ask CodeRabbit questions or request actions
+
+## Open Questions
+
+### Pre-Implementation Questions
+- [ ] **Issue Tracking Choice:** Jira or Linear? (Decision needed by Phase 3)
+  - Factors: Existing tools, team preference, API capabilities
+  - Recommendation: Use existing tool if possible, Linear if choosing new
+
+- [ ] **Documentation Platform:** Confluence or Notion? (Decision needed by Phase 3)
+  - Factors: Existing usage, content structure, API access
+  - Recommendation: Confluence for enterprise, Notion for smaller teams
+
+- [ ] **Custom MCP Hosting:** Where to host KellerAI standards MCP? (Decision needed by Phase 3)
+  - Options: AWS EC2, Kubernetes pod, serverless function
+  - Recommendation: Small EC2 instance or existing k8s cluster
+
+- [ ] **Git Hook Adoption:** Mandatory or optional pre-commit hooks? (Decision needed by Phase 2)
+  - Factors: Team preference, development workflow, override complexity
+  - Recommendation: Optional with clear instructions, let teams decide
+
+### Post-Implementation Questions
+- [ ] **Expand to More Platforms:** Should we integrate with Azure DevOps or Bitbucket?
+  - Timeline: Evaluate after Phase 5 based on repository distribution
+  
+- [ ] **Custom Check Library:** Which additional custom checks should we create?
+  - Timeline: Ongoing based on team needs and production issues
+
+- [ ] **Cross-repository Learning:** Should we enable global learnings across all private repos?
+  - Timeline: Phase 5, after learning quality validated per-repo
+
+- [ ] **Advanced MCP Servers:** Should we build MCP for other systems (Slack, Datadog, APM)?
+  - Timeline: Phase 5+, if context needs identified
+
+</appendix>
+
+---
+
+<task-master-integration>
+
+# How TaskMaster Will Parse This PRD
+
+When you run `task-master parse-prd kellerai-coderabbit-integration-prd.txt --research`, TaskMaster will:
+
+## 1. Extract Capabilities → Main Tasks
+
+Each `### Capability:` section becomes a top-level task:
+
+**Generated Main Tasks:**
+- Task 1: PR Review Automation
+- Task 2: CLI Integration
+- Task 3: Context Enrichment
+- Task 4: Quality Gate Enforcement
+- Task 5: Central Configuration Management
+
+## 2. Extract Features → Subtasks
+
+Each `#### Feature:` becomes a subtask under its capability:
+
+**Example for Task 1 (PR Review Automation):**
+- Subtask 1.1: Automatic PR Analysis
+- Subtask 1.2: Issue Tracking Integration
+- Subtask 1.3: Interactive Review Commands
+- Subtask 1.4: Knowledge Base Learning
+
+## 3. Parse Dependencies → Task Dependencies
+
+From `<dependency-graph>`:
+
+**Foundation Layer (no dependencies):**
+- CodeRabbit Account Setup
+- GitHub/GitLab Organization Access
+- Development Environment Baseline
+
+**PR Automation Layer (depends on Foundation):**
+- CodeRabbit App Installation depends on [CodeRabbit Account Setup, GitHub/GitLab Organization Access]
+- Central Configuration Repository depends on [CodeRabbit App Installation]
+
+**Result:** TaskMaster creates dependency graph ensuring topological execution order
+
+## 4. Extract Phases → Task Priorities
+
+From `<implementation-roadmap>`:
+
+**Phase 0 tasks:** Highest priority (must be done first)
+**Phase 1 tasks:** High priority (depends on Phase 0)
+**Phase 2 tasks:** Medium priority (depends on Phase 1)
+**Phase 3 tasks:** Medium priority (depends on Phase 1, parallel with Phase 2 possible)
+**Phase 4 tasks:** Lower priority (depends on Phase 1 and 3)
+**Phase 5 tasks:** Lowest priority (depends on all previous)
+
+## 5. Use Test Strategy → Test Generation
+
+From `<test-strategy>`:
+
+TaskMaster AI's Surgical Test Generator will use test scenarios during implementation:
+- **Security Check Test:** Create PR with hardcoded credential → verify check fails
+- **CLI Workflow Test:** Run implement-review-fix cycle → verify autonomous completion
+- **MCP Integration Test:** Query Context7 for React docs → verify documentation appears in review
+
+## Why RPG Structure Matters for TaskMaster
+
+**Traditional Flat PRD:**
+```
+- Implement PR reviews
+- Set up CLI
+- Add MCP servers
+- Create quality gates
+```
+❌ No clear dependencies → arbitrary order → potential failures → rework needed
+
+**RPG-Structured PRD:**
+```
+Phase 0: Foundation (CodeRabbit account, GitHub access)
+  ↓
+Phase 1: PR Automation (depends on Foundation)
+  ↓
+Phase 2: CLI Integration (depends on PR Automation)
+Phase 3: MCP Servers (depends on PR Automation, parallel with Phase 2)
+  ↓
+Phase 4: Quality Gates (depends on PR Automation + MCP Servers)
+  ↓
+Phase 5: Optimization (depends on all previous)
+```
+✅ Explicit dependencies → correct execution order → parallel where possible → efficient implementation
+
+## TaskMaster Commands After Parsing
+
+```bash
+# Parse this PRD
+task-master parse-prd .taskmaster/docs/kellerai-coderabbit-integration-prd.txt --research
+
+# View generated tasks
+task-master list
+
+# Analyze task complexity
+task-master analyze-complexity --research
+
+# Expand complex tasks into subtasks
+task-master expand --all --research
+
+# Show next available task (respecting dependencies)
+task-master next
+
+# Start implementing Phase 0
+task-master show <phase-0-task-id>
+task-master set-status --id=<task-id> --status=in-progress
+
+# Complete task and move to next
+task-master set-status --id=<task-id> --status=done
+task-master next  # Shows next task based on dependency graph
+```
+
+## Expected TaskMaster Output
+
+After parsing, you should see approximately:
+
+- **Main Tasks:** 5 (one per capability)
+- **Subtasks:** 20-25 (features under capabilities)
+- **Implementation Tasks:** 40-50 (from implementation roadmap phases)
+- **Validation Tasks:** 10-15 (from test strategy and phase exit criteria)
+
+**Total:** ~75-90 tasks organized in dependency-aware structure
+
+## Tips for Best Results
+
+1. **Use --research flag:** Leverages Perplexity for context-aware task generation
+2. **Review generated tasks:** TaskMaster AI may combine or split tasks intelligently
+3. **Update as needed:** Use `task-master update-task` to refine task descriptions
+4. **Track progress:** Regular `task-master list` shows completion status
+5. **Leverage expansion:** `task-master expand --id=<complex-task>` breaks down as needed
+
+</task-master-integration>
+
+---
+
+**END OF PRD**
+
+**Document Version:** 1.0  
+**Status:** Ready for TaskMaster Parsing  
+**Author:** Integration & Tooling Research Agent  
+**Date:** 2025-10-14
+
+**Next Steps:**
+1. Run: `task-master parse-prd .taskmaster/docs/kellerai-coderabbit-integration-prd.txt --research`
+2. Review: `task-master list`
+3. Analyze: `task-master analyze-complexity --research`
+4. Expand: `task-master expand --all --research`
+5. Begin: `task-master next`

@@ -1,0 +1,287 @@
+name: Quality Gate Status Checks
+
+# This workflow integrates CodeRabbit quality checks with GitHub status checks
+# to enforce blocking of PRs with critical quality gate failures
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  statuses: write
+  checks: write
+  contents: read
+
+jobs:
+  quality-gate-enforcement:
+    name: Quality Gate Enforcement
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for breaking change detection
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install quality check dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f quality-checks/requirements.txt ]; then
+            pip install -r quality-checks/requirements.txt
+          else
+            # Install minimal dependencies for quality checks
+            pip install pyyaml pytest
+          fi
+
+      - name: Run quality checks
+        id: quality_checks
+        continue-on-error: true  # Continue to post results even if checks fail
+        run: |
+          echo "Running quality gate checks..."
+          
+          # Create results directory
+          mkdir -p quality-check-results
+          
+          # Run quality checks if orchestrator exists
+          if [ -f quality-checks/quality_orchestrator.py ]; then
+            python -c "
+            import sys
+            import json
+            from pathlib import Path
+            
+            # Import quality orchestrator
+            sys.path.insert(0, 'quality-checks')
+            from quality_orchestrator import QualityCheckOrchestrator
+            
+            # Initialize orchestrator in error mode (for PR blocking)
+            orchestrator = QualityCheckOrchestrator(mode='error')
+            
+            # Get PR information from GitHub context
+            pr_title = '${{ github.event.pull_request.title }}'
+            pr_description = '${{ github.event.pull_request.body }}'
+            
+            # Get changed files from git diff
+            import subprocess
+            from pathlib import Path
+            
+            # Get list of changed files
+            result = subprocess.run(
+                ['git', 'diff', '--name-only', 'origin/main...HEAD'],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            changed_file_paths = [f for f in result.stdout.strip().split('\n') if f]
+            
+            # Read file contents
+            changed_files = {}
+            old_files = {}
+            for file_path in changed_file_paths:
+                if file_path and Path(file_path).exists():
+                    try:
+                        changed_files[file_path] = Path(file_path).read_text()
+                        # Get old version
+                        old_result = subprocess.run(
+                            ['git', 'show', f'origin/main:{file_path}'],
+                            capture_output=True,
+                            text=True,
+                            check=False
+                        )
+                        old_files[file_path] = old_result.stdout if old_result.returncode == 0 else ''
+                    except Exception as e:
+                        print(f'Warning: Could not read {file_path}: {e}', file=sys.stderr)
+            
+            # Run validation
+            result = orchestrator.validate_pr(
+                pr_title=pr_title,
+                pr_description=pr_description or '',
+                changed_files=changed_files,
+                old_files=old_files
+            )
+            
+            # Export results
+            results_data = {
+                'passed': result.passed,
+                'critical_failures': len([f for f in result.failures if f.get('severity') == 'critical']),
+                'total_failures': len(result.failures),
+                'failures': result.failures,
+                'warnings': result.warnings
+            }
+            
+            Path('quality-check-results/results.json').write_text(json.dumps(results_data, indent=2))
+            
+            # Set outputs
+            print(f'passed={str(result.passed).lower()}')
+            print(f'critical_failures={len([f for f in result.failures if f.get(\"severity\") == \"critical\"])}')
+            print(f'total_failures={len(result.failures)}')
+            " > quality-check-results/output.txt
+            
+            # Extract outputs
+            cat quality-check-results/output.txt >> $GITHUB_OUTPUT
+          else
+            echo "Quality orchestrator not found, skipping checks"
+            echo "passed=true" >> $GITHUB_OUTPUT
+            echo "critical_failures=0" >> $GITHUB_OUTPUT
+            echo "total_failures=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Status Check
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read results
+            let passed = '${{ steps.quality_checks.outputs.passed }}' === 'true';
+            let criticalFailures = parseInt('${{ steps.quality_checks.outputs.critical_failures }}') || 0;
+            let totalFailures = parseInt('${{ steps.quality_checks.outputs.total_failures }}') || 0;
+            
+            // Determine status
+            let state = passed ? 'success' : 'failure';
+            let description = passed 
+              ? '✅ All quality gates passed'
+              : `❌ ${criticalFailures} critical failure(s), ${totalFailures} total failure(s)`;
+            
+            // Create status check
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state: state,
+              target_url: `${context.payload.pull_request.html_url}/checks`,
+              description: description,
+              context: 'CodeRabbit Quality Gates'
+            });
+            
+            // Post comment if failed
+            if (!passed && criticalFailures > 0) {
+              let resultsFile = 'quality-check-results/results.json';
+              let results = {};
+              
+              try {
+                results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
+              } catch (error) {
+                console.log('Could not read results file');
+              }
+              
+              // Build failure list
+              let failureList = results.failures?.map(f => 
+                `- **${f.check_name || 'Unknown'}** (${f.severity || 'medium'}): ${f.message || 'No details'}`
+              ).join('\n') || 'See CodeRabbit review for details';
+              
+              let commentBody = `## ⚠️ Quality Gate Failure - Merge Blocked
+
+This PR has been blocked due to ${criticalFailures} critical quality gate failure(s).
+
+### Failed Checks
+${failureList}
+
+### Next Steps
+
+1. **Review Failed Checks**: Each failed check includes specific guidance on what needs to be fixed
+2. **Fix Issues**: Address the failures according to the remediation guidance
+3. **Push Changes**: This workflow will automatically re-run when you push fixes
+4. **Request Override**: If you believe this is a false positive, see override instructions below
+
+### Override Process (Requires Justification)
+
+If you need to override a check failure, comment:
+
+\`\`\`
+@coderabbitai ignore <check-name> --reason "Detailed justification here (minimum 50 characters)"
+\`\`\`
+
+**NOT available for override** (always enforced):
+- Security checks (\`hardcoded-credentials\`, \`sql-injection\`, \`sensitive-data-logging\`, \`unsafe-deserialization\`)
+- Breaking changes (\`api-signature-changes\`, \`removed-public-methods\`)
+
+### Need Help?
+
+- 📖 **Quick Reference**: [Quality Gates Guide](docs/QUALITY_GATES_QUICK_REFERENCE.md)
+- 📚 **Complete Documentation**: [Quality Checks Guide](docs/quality-checks-guide.md)
+- 💬 **Escalation**: Mention @kellerai/tech-leads for urgent override approval
+
+---
+*Quality Gate Status Check - Automated by GitHub Actions*
+`;
+
+              // Check if comment already exists
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number
+              });
+              
+              const existingComment = comments.data.find(comment => 
+                comment.body.includes('Quality Gate Failure - Merge Blocked')
+              );
+              
+              if (existingComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: commentBody
+                });
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  body: commentBody
+                });
+              }
+            }
+
+      - name: Upload quality check results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-check-results
+          path: quality-check-results/
+          retention-days: 30
+
+      - name: Fail workflow if quality gates failed
+        if: steps.quality_checks.outputs.passed != 'true'
+        run: |
+          echo "::error::Quality gate checks failed. PR cannot be merged."
+          exit 1
+
+  check-coderabbit-approval:
+    name: CodeRabbit Review Status
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check CodeRabbit review status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get all reviews for this PR
+            const reviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            // Check if CodeRabbit requested changes
+            const coderabbitReview = reviews.data
+              .filter(review => review.user.login === 'coderabbitai[bot]')
+              .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))[0];
+            
+            if (coderabbitReview && coderabbitReview.state === 'CHANGES_REQUESTED') {
+              core.setFailed('CodeRabbit has requested changes. Please address the review comments before merging.');
+            } else if (coderabbitReview && coderabbitReview.state === 'APPROVED') {
+              console.log('✅ CodeRabbit approved this PR');
+            } else {
+              console.log('⏳ Waiting for CodeRabbit review...');
+            }

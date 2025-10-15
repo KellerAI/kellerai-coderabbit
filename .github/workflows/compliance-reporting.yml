@@ -1,0 +1,154 @@
+name: Quality Gate Compliance Reporting
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM PST (17:00 UTC)
+    - cron: '0 17 * * 1'
+  workflow_dispatch:  # Manual trigger
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  generate-weekly-report:
+    name: Generate Weekly Compliance Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for metrics
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download metrics artifacts
+        continue-on-error: true  # Don't fail if no artifacts exist yet
+        uses: actions/download-artifact@v4
+        with:
+          pattern: quality-gate-metrics-*
+          path: .quality-gate-metrics/
+          merge-multiple: true
+
+      - name: Generate compliance report
+        id: generate_report
+        run: |
+          python .github/scripts/generate-compliance-report.py
+          
+          # Capture exit code
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add compliance-reports/ || true
+          git diff --staged --quiet || git commit -m "docs: add weekly compliance report $(date +%Y-%m-%d)"
+          git push || echo "No changes to push"
+
+      - name: Post to Slack
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "📊 Weekly Quality Gate Compliance Report",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "📊 Weekly Quality Gate Compliance Report"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The weekly compliance report has been generated and is available in the repository."
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Report"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/tree/main/compliance-reports"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Create GitHub issue if below target
+        if: steps.generate_report.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find the latest report
+            const reportsDir = 'compliance-reports';
+            const reportFile = path.join(reportsDir, `weekly-${new Date().toISOString().split('T')[0]}.md`);
+            
+            if (!fs.existsSync(reportFile)) {
+              console.log('Report file not found, skipping issue creation');
+              return;
+            }
+            
+            const report = fs.readFileSync(reportFile, 'utf8');
+            
+            // Extract compliance rate
+            const complianceMatch = report.match(/\*\*Compliance Rate:\*\* ([\d.]+)%/);
+            if (!complianceMatch) {
+              console.log('Could not parse compliance rate');
+              return;
+            }
+            
+            const rate = parseFloat(complianceMatch[1]);
+            
+            // Determine severity
+            let severity = 'warning';
+            let labels = ['quality-gates', 'compliance', 'needs-attention'];
+            
+            if (rate < 85) {
+              severity = 'critical';
+              labels.push('priority:high');
+            }
+            
+            // Create issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${severity === 'critical' ? '🚨' : '⚠️'} Quality Gate Compliance ${severity === 'critical' ? 'Critical' : 'Below Target'}: ${rate}%`,
+              body: report + `\n\n---\n\n**Severity:** ${severity}\n**Action Required:** Review and address failing checks to improve compliance rate.`,
+              labels: labels
+            });
+            
+            console.log(`Created issue for compliance rate: ${rate}%`);
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Compliance Report Generated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "compliance-reports/weekly-$(date +%Y-%m-%d).md" ]; then
+            echo "✅ Report successfully generated and committed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Report Preview" >> $GITHUB_STEP_SUMMARY
+            head -n 30 "compliance-reports/weekly-$(date +%Y-%m-%d).md" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Report generation failed" >> $GITHUB_STEP_SUMMARY
+          fi

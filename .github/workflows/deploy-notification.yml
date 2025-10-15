@@ -1,0 +1,110 @@
+name: Deploy Notification
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.coderabbit.yaml'
+      - 'templates/**'
+
+jobs:
+  notify-deployment:
+    name: Notify Configuration Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Fetch last 2 commits to compare changes
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-only HEAD^ HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate change summary
+        id: summary
+        run: |
+          echo "## CodeRabbit Configuration Updated" > summary.txt
+          echo "" >> summary.txt
+          echo "**Commit:** ${{ github.sha }}" >> summary.txt
+          echo "**Author:** ${{ github.actor }}" >> summary.txt
+          echo "**Branch:** ${{ github.ref_name }}" >> summary.txt
+          echo "" >> summary.txt
+          echo "**Changed Files:**" >> summary.txt
+          echo "${{ steps.changed-files.outputs.files }}" | while read file; do
+            echo "- \`$file\`" >> summary.txt
+          done
+          echo "" >> summary.txt
+          echo "**Impact:**" >> summary.txt
+          echo "These changes will affect all repositories in the KellerAI organization that don't have local .coderabbit.yaml configurations." >> summary.txt
+          echo "" >> summary.txt
+          echo "**Next Steps:**" >> summary.txt
+          echo "1. Monitor CodeRabbit reviews on active PRs for any issues" >> summary.txt
+          echo "2. Check team feedback in #code-reviews channel" >> summary.txt
+          echo "3. Verify configuration works as expected across different project types" >> summary.txt
+
+          cat summary.txt
+
+      - name: Post to GitHub Discussions (if enabled)
+        if: false  # Enable when GitHub Discussions are set up
+        run: |
+          echo "Posting deployment notification to GitHub Discussions..."
+          # gh discussion create --category "Announcements" --title "CodeRabbit Config Updated" --body "$(cat summary.txt)"
+
+      - name: Send Slack notification (if configured)
+        if: false  # Enable when Slack webhook is configured
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST "$SLACK_WEBHOOK_URL" \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "text": "CodeRabbit Configuration Updated",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🤖 CodeRabbit Configuration Deployed"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}\n*Files Changed:* See commit for details"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Impact:* All repositories without local configs will use the updated settings"
+                    }
+                  }
+                ]
+              }'
+          fi
+
+      - name: Create deployment issue (optional)
+        if: false  # Enable if you want automated tracking issues
+        run: |
+          gh issue create \
+            --title "Configuration Deployment: ${{ github.sha }}" \
+            --body "$(cat summary.txt)" \
+            --label "deployment,coderabbit" \
+            --assignee "${{ github.actor }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Deployment Notification Sent" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat summary.txt >> $GITHUB_STEP_SUMMARY

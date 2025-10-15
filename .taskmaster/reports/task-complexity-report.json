@@ -1,0 +1,45 @@
+{
+	"meta": {
+		"generatedAt": "2025-10-15T08:10:16.497Z",
+		"tasksAnalyzed": 4,
+		"totalTasks": 14,
+		"analysisCount": 4,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 14,
+			"taskTitle": "Create CodeRabbit CLI slash command for Claude Code integration",
+			"complexityScore": 8,
+			"recommendedSubtasks": 12,
+			"expansionPrompt": "Break down into: (1) slash command file creation with proper frontmatter and tool allowlist, (2) default behavior implementation for uncommitted changes review, (3) parameter parsing system for type/config/plain options, (4) JSON output parsing and issue categorization by severity, (5) iterative review loop with 3-cycle maximum, (6) automatic fix application prioritizing P0 then P1 issues, (7) re-review after each fix cycle, (8) progress tracking and status reporting, (9) error handling for missing CLI/auth, (10) configuration integration with central .coderabbit.yaml, (11) quality gate enforcement (0 P0, ≤2 P1), (12) comprehensive documentation and workflow integration",
+			"reasoning": "Complex integration task requiring: CLI integration with subprocess management, JSON parsing logic, iterative workflow implementation, automatic code fixing, error handling, authentication management, configuration file integration, and comprehensive documentation. Involves coordinating multiple tools (Bash, BashOutput, Read, Edit, Write) with complex state management across review cycles. Dependencies on existing infrastructure add integration complexity."
+		},
+		{
+			"taskId": 15,
+			"taskTitle": "Integrate CodeRabbit CLI into Knowledge Base validation GitHub Actions workflow",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Divide into: (1) GitHub Actions workflow file modification at line 44, (2) CodeRabbit CLI installation with OS detection and permissions setup, (3) authentication implementation using GitHub secrets, (4) review execution targeting docs/knowledge-base/** paths with proper configuration, (5) JSON output parsing with jq for critical issue extraction, (6) workflow failure logic for critical issues while allowing warnings, (7) comprehensive testing with different PR scenarios including clean changes, critical issues, warnings, and authentication failures",
+			"reasoning": "Moderate complexity CI/CD integration task. Requires GitHub Actions experience, CLI installation automation, authentication handling, and selective file targeting. JSON parsing with jq adds complexity but existing workflow structure provides foundation. Testing scenarios are well-defined but require careful orchestration of different failure modes."
+		},
+		{
+			"taskId": 16,
+			"taskTitle": "Optimize .coderabbit.yaml configuration for Claude Sonnet 4.5 behavioral characteristics",
+			"complexityScore": 7,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Structure as: (1) model-specific behavior documentation with Sonnet 4.5 paradox explanation and severity-based guidance, (2) directness configuration with tone settings per issue type, (3) confidence threshold optimization with dynamic scoring, (4) performance utilization with batch size and processing improvements, (5) focus area expansion for performance and architectural analysis, (6) quality gate refinement with graduated enforcement, (7) cache strategy optimization for speed improvements, (8) experimental features enabling with cross-repository learning and pattern detection",
+			"reasoning": "High complexity configuration optimization requiring deep understanding of Sonnet 4.5 behavioral characteristics, CodeRabbit configuration options, and performance tuning. Involves balancing accuracy vs noise reduction, implementing severity-based configurations, and experimental feature integration. Testing requires sophisticated behavioral validation and performance measurement."
+		},
+		{
+			"taskId": 17,
+			"taskTitle": "Build autonomous quality gate script for AI coding agent self-correction workflows",
+			"complexityScore": 9,
+			"recommendedSubtasks": 10,
+			"expansionPrompt": "Break into: (1) Python script creation with comprehensive CLI interface and argument parsing, (2) CodeRabbit CLI integration with subprocess management and JSON parsing, (3) autonomous fix application engine with syntax validation, (4) iteration loop with convergence detection and early stopping, (5) integration with existing quality_orchestrator.py infrastructure, (6) structured JSON output format for AI agent consumption, (7) comprehensive error handling and validation, (8) unit testing suite with mocking, (9) integration testing with end-to-end workflows, (10) Claude Code integration testing with slash command compatibility",
+			"reasoning": "Very high complexity autonomous system requiring: sophisticated subprocess management, file manipulation with syntax validation, convergence algorithms, integration with existing infrastructure, comprehensive error handling, and extensive testing. The autonomous nature adds complexity in handling edge cases and ensuring reliability. Integration with AI agents requires careful JSON API design and testing across multiple execution contexts."
+		}
+	]
+}

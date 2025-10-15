@@ -1,0 +1,182 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kellerai-coderabbit-integration"
+version = "1.0.0"
+description = "KellerAI's comprehensive CodeRabbit AI code review integration with quality gates, MCP servers, and automation"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "Proprietary - KellerAI Internal"}
+authors = [
+    {name = "KellerAI Engineering", email = "engineering@kellerai.com"}
+]
+maintainers = [
+    {name = "KellerAI Engineering", email = "engineering@kellerai.com"}
+]
+keywords = [
+    "coderabbit",
+    "code-review",
+    "quality-gates",
+    "mcp-servers",
+    "automation",
+    "ci-cd"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "pyyaml>=6.0,<7.0",
+    "pytest>=8.4.0",
+    "pytest-cov>=7.0.0",
+    "mcp>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.13.0",
+    "mypy>=1.18.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-mock>=3.11.0,<4.0",
+    "pytest-html>=4.1.0",
+    "pytest-xdist>=3.6.0",
+]
+docs = [
+    "mkdocs>=1.5.0,<2.0",
+    "mkdocs-material>=9.0.0,<10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/kellerai/coderabbit"
+Documentation = "https://github.com/kellerai/coderabbit/tree/main/docs"
+Repository = "https://github.com/kellerai/coderabbit"
+Issues = "https://github.com/kellerai/coderabbit/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["quality_checks*", "mcp_servers*"]
+exclude = ["tests*", "docs*", ".github*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = ["quality_checks", "mcp_servers"]
+cache-dir = ".tmp/.ruff_cache"
+exclude = [
+    "tests/**", "docs/**", "build/**", "dist/**",
+    "*.egg-info/**", "__pycache__/**", ".pytest_cache/**",
+    "*.mypy_cache/**", "*.ruff_cache/**", ".tmp/**",
+    ".claude/**", ".serena/**", ".taskmaster/**"
+]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "I", "N", "W", "B", "C90", "UP",  # Current rules
+    "TID", "TRY", "SIM", "RET", "ARG", "PTH",   # Essential best practices
+    "S", "BLE", "C4", "PIE", "RSE", "TCH"       # Quality & safety
+]
+ignore = ["E501", "TRY300", "TRY003", "W191", "E101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+
+[tool.ruff.lint.isort]
+known-first-party = ["quality_checks", "mcp_servers"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = [
+    "quality-checks/tests",
+    "mcp-servers/*/tests",
+]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--cov=quality_checks",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+# Warnings
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+# Strict checks
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_any_expr = false
+disallow_any_decorated = true
+disallow_any_explicit = false
+disallow_subclassing_any = true
+no_implicit_reexport = true
+strict_equality = true
+strict_concatenate = true
+
+# Error formatting
+show_error_codes = true
+show_column_numbers = true
+show_error_context = true
+pretty = true
+
+# Cache and paths
+cache_dir = ".tmp/.mypy_cache"
+exclude = ["tests/", "docs/", "build/"]
+
+[[tool.mypy.overrides]]
+module = "quality_checks.*"
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["quality_checks", "mcp_servers"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2
+show_missing = true
+
+[tool.coverage.html]
+directory = "htmlcov"

@@ -1,4 +1,260 @@
-/.mcp.json
-/.venv/
-/.idea/
-/.claude/settings.local.json
+# KellerAI CodeRabbit Integration - .gitignore
+
+# ==============================================================================
+# Python
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# ==============================================================================
+# Node.js / JavaScript
+# ==============================================================================
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+dev-debug.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+out/
+
+# ==============================================================================
+# IDEs and Editors
+# ==============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ==============================================================================
+# Operating Systems
+# ==============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+# ==============================================================================
+# Environment and Configuration
+# ==============================================================================
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# MCP Configuration (local overrides)
+.mcp.json
+.mcp.local.json
+
+# Claude Code (local settings)
+.claude/settings.local.json
+
+# ==============================================================================
+# Project Specific
+# ==============================================================================
+
+# Quality gate metrics and reports
+.quality-gate-metrics/
+compliance-reports/
+.coderabbit-overrides.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+
+# Documentation builds
+site/
+docs/_build/
+docs/.doctrees/
+
+# Task Master (optional - uncomment if you want to gitignore)
+# .taskmaster/tasks/tasks.json
+# .taskmaster/tasks/*.md
+# .taskmaster/state.json
+
+# Serena memories (optional - uncomment if sensitive)
+# .serena/memories/
+
+# ==============================================================================
+# Security
+# ==============================================================================
+
+# Credentials and secrets
+*.pem
+*.key
+*.cert
+*.p12
+credentials.json
+secrets.yaml
+secrets.json
+*-credentials.json
+
+# API keys
+.api-keys
+api-keys.txt
+
+# SSH keys
+id_rsa
+id_rsa.pub
+known_hosts
+
+# ==============================================================================
+# Miscellaneous
+# ==============================================================================
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and debugging
+debug.log
+error.log
+combined.log

@@ -1,0 +1,2988 @@
+# awesome-coderabbit
+
+## Summary
+Repository: coderabbitai/awesome-coderabbit
+Commit: be524632e7756c553a3b1e0dcc8b6aad91badcee
+Files analyzed: 47
+
+Estimated tokens: 25.7k
+
+## File Tree
+Directory structure:
+└── coderabbitai-awesome-coderabbit/
+    ├── README.md
+    ├── CONTRIBUTING.md
+    ├── LICENSE
+    └── configs/
+        ├── cpp/
+        │   └── coderabbit-cpp-base.yaml
+        ├── django/
+        │   └── coderabbit-clean.yaml
+        ├── docs/
+        │   ├── coderabbit-docs-review.yaml
+        │   ├── mdx-style-guide-config.yaml
+        │   └── docusaurus/
+        │       └── npm-package-docs-config.yaml
+        ├── flutter/
+        │   └── dart-testing-style-config.yaml
+        ├── fullstack/
+        │   ├── coderabbit-full-stack.yaml
+        │   └── coderabbit-swagger-review.yaml
+        ├── github/
+        │   └── reviewpad.yaml
+        ├── go/
+        │   ├── coderabbit-actor-ddd.yaml
+        │   ├── coderabbit-performance.yaml
+        │   ├── coderabbit-uber-e2e.yaml
+        │   ├── coderabbit-uber-style.yaml
+        │   ├── coderabbit-warden-style.yaml
+        │   ├── go-uber-testing-config.yaml
+        │   └── golang-uber-style-config.yaml
+        ├── haskell/
+        │   └── coderabbit-neohaskell.yaml
+        ├── java/
+        │   ├── java-21-enterprise-checks-config.yaml
+        │   └── enterprise/
+        │       └── .coderabbit.yaml
+        ├── javascript/
+        │   ├── coderabbit-google-style.yaml
+        │   ├── coderabbit-mocha-google.yaml
+        │   ├── javascript-mocha-config.yaml
+        │   ├── mocha-google-style-japan-config.yaml
+        │   └── react-mui-style-config.yaml
+        ├── monorepo/
+        │   └── nestjs-nextjs-monorepo-config.yaml
+        ├── nestjs/
+        │   └── nestjs-docker-config.yaml
+        ├── nodejs/
+        │   └── coderabbit-nestjs-style.yaml
+        ├── nuxt/
+        │   └── coderabbit-vue-typescript.yaml
+        ├── python/
+        │   ├── coderabbit-python-portal.yaml
+        │   ├── coderabbit-wg-utilities.yaml
+        │   ├── pytest-google-style-config.yaml
+        │   └── python-ruff-config.yaml
+        ├── react/
+        │   ├── coderabbit-jsx-google.yaml
+        │   └── coderabbit-react-ts.yaml
+        ├── rust/
+        │   └── rust-quality-review-japan-config.yaml
+        ├── solidity/
+        │   └── coderabbit-hardhat-review.yaml
+        ├── testing/
+        │   └── cypress-enterprise-config.yaml
+        ├── typescript/
+        │   ├── coderabbit-vitest.yaml
+        │   ├── enterprise-typescript-standards-config.yaml
+        │   ├── react-graphql-config.yaml
+        │   └── typescript-google-style-config.yaml
+        ├── unity/
+        │   └── udonsharp-and-website-config.yaml
+        ├── web-frontend/
+        │   └── react-typescript-review-config.yaml
+        └── wordpress/
+            └── coderabbit-wordpress-review.yaml
+
+
+## Content
+================================================
+FILE: README.md
+================================================
+# Awesome CodeRabbit [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)
+
+[CodeRabbit](https://www.coderabbit.ai) is an AI-powered code review tool that helps development teams improve code quality and accelerate the review process. It integrates with popular version control platforms and provides intelligent feedback on code changes.
+
+This curated list covers the best resources, tutorials, and community content related to CodeRabbit 🐰
+
+## Contents
+
+- [Official Resources](#official-resources)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Configuration Examples](#configuration-examples)
+- [Integration Guides](#integration-guides)
+- [Video Tutorials](#video-tutorials)
+- [Blogs](#blogs)
+- [Media Coverage](#media-coverage)
+- [Community Reviews](#community-reviews)
+- [Projects Using CodeRabbit](#projects-using-coderabbit)
+
+## Official Resources
+
+- [Documentation](https://docs.coderabbit.ai) - Comprehensive docs covering all aspects of CodeRabbit.
+- [Blog](https://www.coderabbit.ai/blog) - Official blog featuring updates, tutorials, and best practices.
+- [FAQ](https://www.coderabbit.ai/faq) - Frequently asked questions about CodeRabbit.
+- [GitHub Repository](https://github.com/coderabbitai/ai-pr-reviewer) - Official AI PR Reviewer repository.
+- [LinkedIn](https://www.linkedin.com/company/coderabbitai/) - Official LinkedIn presence.
+- [Twitter](https://x.com/coderabbitai) - Official Twitter/X account.
+- [YouTube Channel](https://www.youtube.com/@CodeRabbitAI) - Official YouTube channel with tutorials and updates.
+
+## Getting Started
+
+- [CodeRabbit Startup Program](https://www.coderabbit.ai/blog/coderabbit-startup-program) - Special program for startups.
+- [AI Code Reviewer Examples](https://www.coderabbit.ai/blog/how-to-use-an-ai-code-reviewer-on-github-in-4-examples) - Four practical examples of using CodeRabbit.
+
+## API Reference
+
+- [OpenAPI Documentation](https://api.coderabbit.ai/api/swagger/) - Complete Swagger documentation for CodeRabbit's REST API endpoints.
+
+## Configuration Examples
+
+### Enterprise Configuration Example
+
+Explore real-world CodeRabbit configurations from various projects.
+
+```yaml
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+tone_instructions: 'You are an expert code reviewer in Java, TypeScript, JavaScript, and NodeJS. You work in an enterprise software developer team, providing concise and clear code review advice. You only elaborate or provide detailed explanations when requested.'
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["pg", "release"]
+  path_instructions:
+    - path: "app/client/cypress/**/**.*"
+      instructions: |
+        Review the following e2e test code written using the Cypress test library. Ensure that:
+        - Follow best practices for Cypress code and e2e automation
+        - Avoid using cy.wait in code
+        - Avoid using cy.pause in code
+        - Avoid using agHelper.sleep()
+        - Use locator variables for locators
+        - Use data-* attributes for selectors
+        - Avoid Xpaths, Attributes and CSS path
+        - Avoid selectors like .btn.submit
+        - Perform logins via API
+        - Avoid using it.only
+        - Use multiple assertions
+        - Avoid string assertions
+        - Ensure unique filenames
+chat:
+  auto_reply: true
+```
+
+Find more examples in the [`configs/`](configs/) directory, organized by language:
+
+```
+configs/
+├── javascript/   # JavaScript project configurations
+├── typescript/   # TypeScript project configurations
+├── python/       # Python project configurations
+├── go/          # Go project configurations
+└── multi-language/ # Full-stack project configurations
+```
+
+
+## Integration Guides
+
+- [Azure DevOps Integration](https://www.coderabbit.ai/blog/getting-started-with-coderabbit-using-azure-devops) - Guide for integrating with Azure DevOps.
+- [CI/CD Pipeline Integration](https://www.coderabbit.ai/blog/how-to-run-static-analysis-on-your-ci-cd-pipelines-using-ai) - Adding AI-powered static analysis to CI/CD pipelines.
+- [Linear Board Integration](https://www.coderabbit.ai/blog/how-to-use-coderabbit-to-validate-issues-against-linear-board) - Guide for Linear board integration.
+- [DevOps Pipeline Integration](https://www.coderabbit.ai/blog/how-to-integrate-ai-code-review-into-your-devops-pipeline) - Comprehensive DevOps integration guide.
+
+## Video Tutorials
+
+- [Getting Started Tutorial](https://www.youtube.com/watch?v=3SyUOSebG7E) - Official step-by-step guide for new users.
+
+## Blogs
+
+- [AI Can Make a Code Review for Free](https://tomaszs2.medium.com/ai-can-make-a-code-review-for-free-a559cf74efa5)
+- [CodeRabbit Deep Dive](https://www.coderabbit.ai/blog/coderabbit-deep-dive)
+- [CodeRabbit vs Others: AI Code Review Tools](https://www.devtoolsacademy.com/blog/coderabbit-vs-others-ai-code-review-tools)
+- [Why Developers Hate Linters](https://www.coderabbit.ai/blog/why-developers-hate-linters)
+- [How to Automate TypeScript Code Reviews with CodeRabbit](https://www.coderabbit.ai/blog/how-to-automate-typescript-code-reviews-with-coderabbit)
+
+
+## Media Coverage
+
+- [TechCrunch Coverage](https://techcrunch.com/2024/08/15/coderabbit-raises-16m-to-bring-ai-to-code-reviews/) - TechCrunch article on CodeRabbit's $16M funding.
+- [Silicon Angle Feature](https://siliconangle.com/2024/08/14/ai-code-review-startup-coderabbit-raises-16m-help-developers-debug-code-faster/) - Coverage of CodeRabbit's funding and mission.
+
+## Community Reviews
+
+- [G2 Reviews](https://www.g2.com/products/coderabbit/reviews) - Verified user reviews and ratings.
+- [Developer Testimonials](https://tomaszs2.medium.com/ai-code-review-tool-coderabbit-replaces-me-and-i-like-it-b1350a9cda58) - Real-world experiences with CodeRabbit.
+
+## Projects Using CodeRabbit
+
+> Here is a list of some of the open-source projects using CodeRabbit for AI-powered code reviews.
+
+- [Appsmith](https://github.com/appsmithorg/appsmith) - Low-code platform for building internal tools [Example Review](https://github.com/appsmithorg/appsmith/pull/37200).
+- [Crowd.dev](https://github.com/CrowdDotDev/crowd.dev) - Open-source developer community platform [Example Review](https://github.com/CrowdDotDev/crowd.dev/pull/2671).
+- [Documenso](https://github.com/documenso/documenso) - Open-source DocuSign alternative [Example Review](https://github.com/documenso/documenso/pull/1436).
+- [Formbricks](https://github.com/formbricks/formbricks) - Open-source survey & experience management solution [Example Review](https://github.com/formbricks/formbricks/pull/4229).
+- [Neon](https://github.com/neondatabase/neon) - Serverless Postgres database platform [Example Review](https://github.com/neondatabase/neon/pull/9100).
+- [NextUI](https://github.com/nextui-org/nextui) - Beautiful, fast, and modern React UI library [Example Review](https://github.com/nextui-org/nextui/pull/3680).
+- [Novu](https://github.com/novuhq/novu) - Open-source notification infrastructure [Example Review](https://github.com/novuhq/novu/pull/5401).
+- [OpenObserve](https://github.com/openobserve/openobserve) - A cloud-native observability platform [Example Review](https://github.com/openobserve/openobserve/pull/4865).
+- [Permify](https://github.com/Permify/permify) - Authorization service & policy engine [Example Review](https://github.com/Permify/permify/pull/1754).
+- [Pipedream](https://github.com/PipedreamHQ/pipedream) - Connect APIs, remarkably fast [Example Review](https://github.com/PipedreamHQ/pipedream/pull/14498).
+- [Plane](https://github.com/makeplane/plane) - Open-source project management tool [Example Review](https://github.com/makeplane/plane/pull/5933).
+- [Unkey](https://github.com/unkeyed/unkey) - API key management solution [Example Review](https://github.com/unkeyed/unkey/pull/2639).
+- [UploadThing](https://github.com/pingdotgg/uploadthing) - File upload solution for modern web [Example Review](https://github.com/pingdotgg/uploadthing/pull/1038).
+
+
+
+================================================
+FILE: CONTRIBUTING.md
+================================================
+# Contributing to Awesome CodeRabbit
+
+We welcome contributions to the awesome coderabbit list.
+
+Please follow these guidelines:
+
+1. Ensure the resource is related to CodeRabbit.
+2. Add your resource to the appropriate section.
+3. Provide a brief description of the resource.
+4. Check for duplicates before submitting.
+5. Submit a pull request with your changes.
+
+Thank you for your contributions. You're awesome 🙏
+
+
+
+================================================
+FILE: LICENSE
+================================================
+Creative Commons Legal Code
+
+CC0 1.0 Universal
+
+    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
+    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
+    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
+    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
+    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+    HEREUNDER.
+
+Statement of Purpose
+
+The laws of most jurisdictions throughout the world automatically confer
+exclusive Copyright and Related Rights (defined below) upon the creator
+and subsequent owner(s) (each and all, an "owner") of an original work of
+authorship and/or a database (each, a "Work").
+
+Certain owners wish to permanently relinquish those rights to a Work for
+the purpose of contributing to a commons of creative, cultural and
+scientific works ("Commons") that the public can reliably and without fear
+of later claims of infringement build upon, modify, incorporate in other
+works, reuse and redistribute as freely as possible in any form whatsoever
+and for any purposes, including without limitation commercial purposes.
+These owners may contribute to the Commons to promote the ideal of a free
+culture and the further production of creative, cultural and scientific
+works, or to gain reputation or greater distribution for their Work in
+part through the use and efforts of others.
+
+For these and/or other purposes and motivations, and without any
+expectation of additional consideration or compensation, the person
+associating CC0 with a Work (the "Affirmer"), to the extent that he or she
+is an owner of Copyright and Related Rights in the Work, voluntarily
+elects to apply CC0 to the Work and publicly distribute the Work under its
+terms, with knowledge of his or her Copyright and Related Rights in the
+Work and the meaning and intended legal effect of CC0 on those rights.
+
+1. Copyright and Related Rights. A Work made available under CC0 may be
+protected by copyright and related or neighboring rights ("Copyright and
+Related Rights"). Copyright and Related Rights include, but are not
+limited to, the following:
+
+  i. the right to reproduce, adapt, distribute, perform, display,
+     communicate, and translate a Work;
+ ii. moral rights retained by the original author(s) and/or performer(s);
+iii. publicity and privacy rights pertaining to a person's image or
+     likeness depicted in a Work;
+ iv. rights protecting against unfair competition in regards to a Work,
+     subject to the limitations in paragraph 4(a), below;
+  v. rights protecting the extraction, dissemination, use and reuse of data
+     in a Work;
+ vi. database rights (such as those arising under Directive 96/9/EC of the
+     European Parliament and of the Council of 11 March 1996 on the legal
+     protection of databases, and under any national implementation
+     thereof, including any amended or successor version of such
+     directive); and
+vii. other similar, equivalent or corresponding rights throughout the
+     world based on applicable law or treaty, and any national
+     implementations thereof.
+
+2. Waiver. To the greatest extent permitted by, but not in contravention
+of, applicable law, Affirmer hereby overtly, fully, permanently,
+irrevocably and unconditionally waives, abandons, and surrenders all of
+Affirmer's Copyright and Related Rights and associated claims and causes
+of action, whether now known or unknown (including existing as well as
+future claims and causes of action), in the Work (i) in all territories
+worldwide, (ii) for the maximum duration provided by applicable law or
+treaty (including future time extensions), (iii) in any current or future
+medium and for any number of copies, and (iv) for any purpose whatsoever,
+including without limitation commercial, advertising or promotional
+purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each
+member of the public at large and to the detriment of Affirmer's heirs and
+successors, fully intending that such Waiver shall not be subject to
+revocation, rescission, cancellation, termination, or any other legal or
+equitable action to disrupt the quiet enjoyment of the Work by the public
+as contemplated by Affirmer's express Statement of Purpose.
+
+3. Public License Fallback. Should any part of the Waiver for any reason
+be judged legally invalid or ineffective under applicable law, then the
+Waiver shall be preserved to the maximum extent permitted taking into
+account Affirmer's express Statement of Purpose. In addition, to the
+extent the Waiver is so judged Affirmer hereby grants to each affected
+person a royalty-free, non transferable, non sublicensable, non exclusive,
+irrevocable and unconditional license to exercise Affirmer's Copyright and
+Related Rights in the Work (i) in all territories worldwide, (ii) for the
+maximum duration provided by applicable law or treaty (including future
+time extensions), (iii) in any current or future medium and for any number
+of copies, and (iv) for any purpose whatsoever, including without
+limitation commercial, advertising or promotional purposes (the
+"License"). The License shall be deemed effective as of the date CC0 was
+applied by Affirmer to the Work. Should any part of the License for any
+reason be judged legally invalid or ineffective under applicable law, such
+partial invalidity or ineffectiveness shall not invalidate the remainder
+of the License, and in such case Affirmer hereby affirms that he or she
+will not (i) exercise any of his or her remaining Copyright and Related
+Rights in the Work or (ii) assert any associated claims and causes of
+action with respect to the Work, in either case contrary to Affirmer's
+express Statement of Purpose.
+
+4. Limitations and Disclaimers.
+
+ a. No trademark or patent rights held by Affirmer are waived, abandoned,
+    surrendered, licensed or otherwise affected by this document.
+ b. Affirmer offers the Work as-is and makes no representations or
+    warranties of any kind concerning the Work, express, implied,
+    statutory or otherwise, including without limitation warranties of
+    title, merchantability, fitness for a particular purpose, non
+    infringement, or the absence of latent or other defects, accuracy, or
+    the present or absence of errors, whether or not discoverable, all to
+    the greatest extent permissible under applicable law.
+ c. Affirmer disclaims responsibility for clearing rights of other persons
+    that may apply to the Work or any use thereof, including without
+    limitation any person's Copyright and Related Rights in the Work.
+    Further, Affirmer disclaims responsibility for obtaining any necessary
+    consents, permissions or other rights required for any use of the
+    Work.
+ d. Affirmer understands and acknowledges that Creative Commons is not a
+    party to this document and has no duty or obligation with respect to
+    this CC0 or use of the Work.
+
+
+
+================================================
+FILE: configs/cpp/coderabbit-cpp-base.yaml
+================================================
+early_access: false
+enable_free_tier: true
+language: en
+tone_instructions: ''
+knowledge_base:
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+chat:
+  auto_reply: true
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters: []
+  path_instructions:
+    - path: '**/*.hpp'
+      instructions: >-
+        Review the C++ code, point out issues relative to principles of clean
+        code, expressiveness, and performance.
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      disabled_rules:
+        - EN_UNPAIRED_BRACKETS
+      disabled_categories:
+        - TYPOS
+        - TYPOGRAPHY
+        - CASING
+      enabled_only: false
+      level: default
+    biome:
+      enabled: true
+    hadolint:
+      enabled: true
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - WIP
+    labels: []
+    drafts: true
+    base_branches:
+      - master
+
+
+
+================================================
+FILE: configs/django/coderabbit-clean.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "**/*.py"
+      instructions: |
+        Review the following code using Python Django. Ensure that:
+          - Ensure each method has a clear, detailed docstring explaining its purpose, parameters, and return values. Enhance existing docstrings for clarity and completeness.
+          - Do not suggest adding type annotations.
+          - Review Django querysets for potential performance improvements and suggest optimizations where applicable.
+          - Ensure that for every model.save() there is a model.full_clean() that precedes it.
+          - Avoid adding generic exception handling (e.g., `except Exception`) in test files. Each test failure should be addressed by the developer with specific exception handling or fixes.
+          - Avoid adding comments relating to importing modules.
+    - path: "tests/*.py"
+      instructions: |
+        - There is no sensitive information in the test files. All data handled is procedural/generic and non-sensitive.
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/docs/coderabbit-docs-review.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# https://docs.coderabbit.ai/guides/configure-coderabbit/
+
+language: "en-US"
+early_access: true
+reviews:
+  profile: "chill"
+  high_level_summary: true
+  request_changes_workflow: false
+  review_status: false
+  collapse_walkthrough: false
+  poem: false
+  auto_review:
+    enabled: false
+    auto_incremental_review: false
+    drafts: true
+    base_branches:
+      - master
+      - beta
+      - rc
+  path_instructions:
+    - path: "**/*"
+      instructions: "
+      Focus on code smells, logic errors, edge cases, missing test cases, security flaws and serious issues.
+      Avoid commenting on minor issues such as linting, formatting and style issues.
+      This project uses tabs instead of spaces, do not suggest usage of spaces over tabs.
+      Are there any 'red flags' in this code that might warrant closer investigation from a security standpoint?
+      Explain what makes them suspicious.
+      When providing code suggestions, particularly when requested, ensure GitHub's suggestion format is used, i.e.:
+      ```suggestion
+      <code changes>
+      ```
+      "
+    - path: "**/*.py"
+      instructions: "
+      _, pgettext, ngettext, and ngettext are defined globally, errors for this being undefined can be ignored.
+      "
+    - path: "**/*.md"
+      instructions: "
+      Focus on grammar, spelling, and punctuation.
+      Also consider readability and clarity of contents.
+      Ensure that changes follow the style of one sentence per line, suggest changes if this is not met.
+      "
+    - path: "user_docs/en/changes.md"
+      instructions: "
+      Ensure each change log entry references an issue or pull request number.
+      Change log entries can also include a reference to a GitHub author.
+      Examples of valid change log entries:
+      * Item with sub-items (#123, @username):
+        * sub-item
+        * bar (#342)
+      * Item with.
+      Multiple lines. (#143)
+      "
+  tools:
+    github-checks:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      # We use custom markdown syntax such as {#Anchor} for anchors.
+      # This is not supported by markdownlint.
+      # In future we plan to introduce markdownlint directly with custom rules. (#16453)
+      enabled: false
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/docs/mdx-style-guide-config.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  high_level_summary: false
+  poem: false
+  review_status: false
+  collapse_walkthrough: false
+  path_instructions:
+    - path: "**/*.mdx"
+      instructions: |
+        "ALWAYS review Markdown content THOROUGHLY with the following criteria:
+        - Use proper nouns in place of personal pronouns like 'We' and 'Our' to maintain consistency in communal documentation.
+        - Avoid gender-specific language and use the imperative form.
+        - Monitor capitalization for emphasis. Avoid using all caps, italics, or bold for emphasis.
+        - Ensure proper nouns are capitalized in sentences.
+        - Apply the Oxford comma.
+        - Use proper title case for buttons, tab names, page names, and links. Sentence case should be used for body content and short phrases, even in links.
+        - Use correct spelling and grammar at all times (IMPORTANT).
+        - For H1, H2, and H3 headers:
+          1. Use sentence case, capitalizing only the first word.
+          2. Preserve the capitalization of proper nouns, technical terms, and acronyms as defined in the 'nouns.txt' file located in the root directory of the project.
+          3. Do not automatically lowercase words that appear in the 'nouns.txt' file, regardless of their position in the header.
+        - Flag any headers that seem to inconsistently apply these rules for manual review.
+        - When reviewing capitalization, always refer to the 'nouns.txt' file for the correct capitalization of proper nouns and technical terms specific to the project.
+        "
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/docs/docusaurus/npm-package-docs-config.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: 'en-US'
+early_access: true
+tone_instructions: "Provide clear, objective, and detailed feedback with a professional and constructive tone, focusing on actionable suggestions for improvement."
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  profile: assertive
+  tools:
+    markdownlint:
+      enabled: true
+    ast-grep:
+      essential_rules: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    ruff:
+      enabled: false
+    shellcheck:
+      enabled: true
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - '[skip review]'
+      - 'Automatic PR'
+    drafts: false
+    base_branches:
+      - 'main'
+  path_instructions:
+    - path: '**/*.ts'
+      instructions: 'Review the TypeScript code of the NPM package to ensure it adheres to the principles of awesome and clean code. This includes proper use of functions, classes, modules. Also, ensure the code follows best practices for package development, such as clear and concise documentation, proper error handling, and efficient data structures and algorithms. The code should also conform to the ESLint rules configured in the codebase. Highlight any deviations and suggest appropriate corrections. Using design patterns that promote code reusability and readability is encouraged.'
+    - path: '**/*.md'
+      instructions: "Review the Markdown files to ensure they are well-structured follow Docusaurus's best practices, easy to read, and contain accurate and up-to-date information. Check for proper formatting, grammar, and spelling. Ensure that the content is relevant and engaging for the target audience. Highlight any inconsistencies or errors and suggest improvements to enhance the overall quality of the documentation."
+    - path: 'test/**/*'
+      instructions: 'Review the test files to ensure they cover all the relevant use cases and edge cases of the codebase. Check for proper test coverage, assertions, and error handling. Ensure that the tests are well-organized, easy to read, and provide meaningful feedback. Highlight any missing or redundant tests and suggest improvements to enhance the overall quality of the test suite.'
+chat:
+  auto_reply: true
+knowledge_base:
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+
+
+
+================================================
+FILE: configs/flutter/dart-testing-style-config.yaml
+================================================
+language: "en-US"
+early_access: true
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "lib/**/*.dart"
+      instructions: |
+        "Review the Dart code. Confirm that:
+        - The docstrings are up-to-date with the implementations. Please highlight the outdated ones.
+        - When an API in a module changes, ensure that all modules that depend on the changed module are updated accordingly.
+        - When seeing a TODO comment, try to write code to complete the todo."
+    - path: "test/**/*"
+      instructions: |
+        "Assess the unit test code employing the Pytest testing framework. Confirm that:
+        - The tests adhere to Dart test's established best practices.
+        - Test descriptions are sufficiently detailed to clarify the purpose of each test.
+        - The tests cover all methods, classes, and errors."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+    drafts: true
+    base_branches:
+      - "develop"
+      - "feat/*"
+      - "setup/*"
+chat:
+  auto_reply: true
+
+
+================================================
+FILE: configs/fullstack/coderabbit-full-stack.yaml
+================================================
+language: en-US
+tone_instructions: ''
+early_access: false
+enable_free_tier: true
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  auto_title_placeholder: '@coderabbitai'
+  review_status: true
+  poem: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  path_filters: [
+    "!**/*.ptxt"
+  ]
+  path_instructions: [
+    {
+      "path": "drafts/*.md",
+      "instructions": "These are PHP RFC's to change the PHP language. Do not just consider the grammar of the text, but consider how it might change the language. For example, if a new feature is being added, consider how it might be used, and propose better ideas if you have them."
+    }
+  ]
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches: []
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: default
+    biome:
+      enabled: true
+    hadolint:
+      enabled: true
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: true
+      level: default
+    golangci-lint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: true
+    detekt:
+      enabled: true
+    eslint:
+      enabled: true
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+
+
+
+================================================
+FILE: configs/fullstack/coderabbit-swagger-review.yaml
+================================================
+language: "en"
+early_access: true
+reviews:
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/.env*"
+      instructions: |
+        "Check that the sensitive data is not stored in the repository."
+    - path: "frontend/api/**"
+      instructions: |
+        "Check the frontend API consumption against the Swagger documentation to confirm:
+        - The frontend correctly uses the API endpoints, parameters, and handles responses as defined in Swagger.
+        - Any discrepancies between the frontend implementation and the Swagger spec are identified and corrected."
+    - path: "frontend/**/*.js"
+      instructions: |
+        "Check that the frontend code is well structured and follows the best practices of ReactJS."
+    - path: "backend/**/*.js"
+      instructions: |
+        "Check that the backend code is well structured and follows the best practices of NodeJS."
+    - path: "backend/**/*.js"
+      instructions: |
+        "Check the backend API implementation against the Swagger documentation to confirm:
+        - The backend correctly implements the API endpoints, parameters, and responses as defined in Swagger.
+        - Any discrepancies between the backend implementation and the Swagger spec are identified and corrected."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: true
+chat:
+  auto_reply: true
+
+
+================================================
+FILE: configs/github/reviewpad.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/*.cs"
+      instructions: "Focus on major issues impacting readability and maintainability. Avoid minor nitpicks."
+    - path: "tests/**/*.cs"
+      instructions: "Review NUnit tests for structure and coverage. Skip minor stylistic concerns."
+    - path: "**/*.py"
+      instructions: "Check for major PEP 8 violations and Python best practices. Ignore trivial formatting issues."
+    - path: "tests/**/*.py"
+      instructions: "Ensure PyTest tests are clear and comprehensive. Don't focus on minor details."
+    - path: "**/*.js"
+      instructions: "Review for significant deviations from Google JavaScript style guide. Minor style issues are not a priority."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "develop"
+      - "feat/*"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/go/coderabbit-actor-ddd.yaml
+================================================
+language: "en"
+early_access: true
+tone_instructions: |
+  Be casual, friendly, and egoless, using approachable, clear, and conversational language that feels warm and engaging.
+  Keep the writing light, concise, and positive, as if speaking to a peer.
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  path_filters:
+    - "!**/*.pb.go"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: |
+        Review the Golang files with a focus on the project's goals:
+        - Actor Model Integration: Ensure the code effectively utilizes the [protoactor](https://github.com/AsynkronIT/protoactor-go)
+          framework, adhering to best practices of the Actor Model.
+        - Domain-Driven Design: Verify that Domain-Driven Design principles are integrated properly, with clear separation of concerns
+          and well-defined domain models. Ensure the use of Event Sourcing is correctly implemented in the Actor-based system.
+        - Code Quality and Maintainability: Focus on readability, proper use of Go idioms, and maintainable code structure. Check
+          for consistent naming conventions, efficient error handling, and adequate documentation, including meaningful comments where needed.
+        - Performance and Scalability: Identify any potential areas for performance improvement, especially concerning actor behavior,
+          concurrency, and data persistence. Suggest refactoring if the code can be streamlined or optimized.
+    - path: "**/*.md"
+      instructions: |
+        Review markdown documentation with these guidelines:
+        - Structure: Ensure consistent heading hierarchy and document organization
+        - Content: Verify accuracy of technical details, code examples, and API references
+        - Quality: Check for spelling, grammar, and broken links
+        - Completeness: Confirm all features and changes are properly documented
+        - Style: Follow project's documentation style guide and formatting conventions
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+  auto_reply_messages:
+    greeting: "👋 Thanks for the mention! 😊 I'm here to assist with your code review."
+    help_request: "🫡 I'm on it! What specific aspect would you like me to focus on?"
+  triggers:
+    - keywords: ["help", "review", "check"]
+      response: "👌 Got it! I'll review that for you right away."
+
+
+
+================================================
+FILE: configs/go/coderabbit-performance.yaml
+================================================
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+language: "en-US"
+early_access: false
+chat: { auto_reply: true }
+tone_instructions: >-
+  Maintain a formal tone, highlighting issues, and suggesting production-grade, elegant, and concise solutions.
+
+reviews:
+  profile: chill
+  high_level_summary: true
+
+  # disables the cringe
+  poem: false
+
+  collapse_walkthrough: true
+  sequence_diagrams: true
+
+  path_filters:
+    - "!**/*.pb.go"
+    - "!**/*.pb.gw.go"
+    - "!**/*_pb.d.ts"
+
+  path_instructions:
+    - path: '**/*.go'
+      instructions: >-
+        Review the Go code, point out issues relative to principles of clean
+        code, expressiveness, and performance.
+    - path: '**/*.proto'
+      instructions: >-
+        Review the Protobuf definitions, point out issues relative to
+        compatibility, and expressiveness.
+    - path: '**/*.sh'
+      instructions: >-
+        Review the shell scripts, point out issues relative to security,
+        performance, and maintainability.
+
+  auto_review:
+    drafts: false
+    # disables review for new commits
+    auto_incremental_review: false
+    base_branches:
+      - develop
+
+  tools:
+    languagetool:
+      enabled: true
+      level: default
+
+
+
+================================================
+FILE: configs/go/coderabbit-uber-e2e.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: false
+  collapse_walkthrough: true
+  path_filters:
+    - "!**/*.pb.go"
+    - "!**/*.pb.gw.go"
+    - "!**/*.mod"
+    - "!**/*.sum"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: "Review the Golang code for conformity with the Uber Golang style guide, highlighting any deviations."
+    - path: "e2e/**/*"
+      instructions: |
+        "Assess the integration and e2e test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*_test.go"
+      instructions: |
+        "Assess the unit test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*.md"
+      instructions: |
+        "Assess the documentation for misspellings, grammatical errors, missing documentation and correctness"
+  auto_review:
+    enabled: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/go/coderabbit-uber-style.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!api/"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: "Review the Golang code for conformity with the Uber Golang style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the integration and e2e test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*_test.go"
+      instructions: |
+        "Assess the unit test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*.md"
+      instructions: |
+        "Assess the documentation for misspellings, grammatical errors, missing documentation and correctness"
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/go/coderabbit-warden-style.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!api/**"
+    - "!wardenjs/src/codegen/**"
+    - "!tests/testdata/**"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: "Review the Golang code for conformity with the Uber Golang style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the integration and e2e test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*_test.go"
+      instructions: |
+        "Assess the unit test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*.md"
+      instructions: |
+        "Assess the documentation for misspellings, grammatical errors, missing documentation and correctness"
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/go/go-uber-testing-config.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!api/"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: "Review the Golang code for conformity with the Uber Golang style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the integration and e2e test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*_test.go"
+      instructions: |
+        "Assess the unit test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*.md"
+      instructions: |
+        "Assess the documentation for misspellings, grammatical errors, missing documentation and correctness"
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/go/golang-uber-style-config.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!api/"
+  path_instructions:
+    - path: "**/*.go"
+      instructions: "Review the Golang code for conformity with the Uber Golang style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the integration and e2e test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*_test.go"
+      instructions: |
+        "Assess the unit test code assessing sufficient code coverage for the changes associated in the pull request"
+    - path: "**/*.md"
+      instructions: |
+        "Assess the documentation for misspellings, grammatical errors, missing documentation and correctness"
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/haskell/coderabbit-neohaskell.yaml
+================================================
+language: en-US
+tone_instructions: >-
+  You must use a respectful, but commanding tone, as if you were impersonating an AI deity.
+early_access: true
+enable_free_tier: true
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  auto_title_placeholder: '@coderabbitai'
+  review_status: true
+  poem: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  path_filters: []
+  path_instructions:
+    - path: ".hlint.yaml"
+      instructions: |
+        Ignore this file
+    - path: "*.hs"
+      instructions: |
+        Remember that this is a NeoHaskell file. NeoHaskell is a
+        Haskell dialect that is inspired by Elm, therefore the
+        Elm style and conventions should be followed. Also,
+        Elm core libs are available, and the Haskell Prelude is
+        ignored, as the NoImplicitPrelude extension is enabled.
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches: []
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: default
+      enabled_rules: []
+      disabled_rules:
+        - EN_UNPAIRED_BRACKETS
+      enabled_categories: []
+      disabled_categories:
+        - TYPOS
+        - TYPOGRAPHY
+        - CASING
+    biome:
+      enabled: true
+    hadolint:
+      enabled: true
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: true
+      level: default
+    golangci-lint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: true
+    detekt:
+      enabled: true
+    eslint:
+      enabled: true
+    ast-grep:
+      packages: []
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: true
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: global
+  issues:
+    scope: global
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+
+
+
+================================================
+FILE: configs/java/java-21-enterprise-checks-config.yaml
+================================================
+language: en-GB
+tone_instructions: ''
+early_access: false
+enable_free_tier: true
+reviews:
+  profile: chill
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  auto_title_placeholder: '@coderabbitai'
+  review_status: true
+  commit_status: true
+  poem: false
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  changed_files_summary: true
+  labeling_instructions: []
+  path_filters:
+    - '**/*'
+    - '**/gen/**'
+    - '!**/test/**/gen/**'
+    - '!**/.git/**'
+    - '!**/target/**'
+  path_instructions:
+    - path: '**/*.java'
+      instructions: |
+        - Review code using Java 21 standards, taking into account the rules defined by `src/main/checkstyle/checkstyle.xml`.
+        - Validate that code indentation uses spaces, not tabs, with an indent of multiple of 4.
+        - Validate that immutable local variables are not annotated with `final` unless the variable is required for use in an inner class.
+        - Allow use of `var` keyword when value is a cast `null`.
+        - Use a coding standard where multi-line expressions have operators and tenary separators at the end of line.
+        - Propose changes that only use the Java 21 API, not the API of Guava.
+        - The pattern matching `instanceof` expression safely handles `null`, returning `false`.
+    - path: '**/main/java/**/*.java'
+      instructions: |
+        - This project is mature and must provide a stable backwards-compatible public Java API.
+        - In the 'Summary by CodeRabbit' section, you must always provide a list of up to 25 changes to the public Java API that will affect end users.
+          If there are no changes, you must explicitly state that there are no changes to the public Java API in this PR.
+          The public Java API is defined as public and protected methods on public classes, plus the file `module-info.java`.
+          Provide the list by deeply analysing code flow, which incudes analysing code flow through private methods and calls to Guava and Java 21.
+          Changes to be reported on include:
+          - New or removed methods in the public Java API
+          - Changes to method return types or parameter types in the public Java API
+          - Changes to method behaviour in the public Java API that might affect consumers
+        - This project uses `System.out.println` instead of logging
+        - This project tends to prefer `for` loops to streams for performance reasons, however either form is acceptable.
+          Do not make suggestions to change between streams and for loops or vice versa.
+    - path: '**/test/java/**/*.java'
+      instructions: |
+        For test code, focus on:
+        - Correctness of test assertions
+        - Test coverage of edge cases
+        - Clear test naming and documentation
+        - Be more lenient with code style and minor optimisations
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches:
+      - 'main'
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: default
+      enabled_rules: []
+      disabled_rules:
+        - EN_UNPAIRED_BRACKETS
+      enabled_categories: []
+      disabled_categories:
+        - TYPOS
+        - TYPOGRAPHY
+        - CASING
+    biome:
+      enabled: true
+    hadolint:
+      enabled: false
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: false
+      level: default
+    golangci-lint:
+      enabled: false
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: false
+    detekt:
+      enabled: false
+    eslint:
+      enabled: true
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    actionlint:
+      enabled: true
+    pmd:
+      enabled: true
+    cppcheck:
+      enabled: false
+    semgrep:
+      enabled: true
+    circleci:
+      enabled: true
+    ast-grep:
+      packages: []
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: true
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+  pull_requests:
+    scope: auto
+
+
+
+================================================
+FILE: configs/java/enterprise/.coderabbit.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# *******************************************************
+# * DO NOT MODIFY this file without maintainer approval *
+# *******************************************************
+
+language: en-US
+tone_instructions: ''
+early_access: true
+enable_free_tier: true
+reviews:
+  profile: chill
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  auto_title_placeholder: '@coderabbitai title'
+  poem: false
+  review_status: false
+  collapse_walkthrough: false
+  path_filters:
+    - '!dist/**'
+    - '!**/*.app'
+    - '!**/*.bin'
+    - '!**/*.bz2'
+    - '!**/*.class'
+    - '!**/*.db'
+    - '!**/*.csv'
+    - '!**/*.tsv'
+    - '!**/*.dat'
+    - '!**/*.dll'
+    - '!**/*.dylib'
+    - '!**/*.egg'
+    - '!**/*.glif'
+    - '!**/*.gz'
+    - '!**/*.xz'
+    - '!**/*.zip'
+    - '!**/*.7z'
+    - '!**/*.rar'
+    - '!**/*.zst'
+    - '!**/*.ico'
+    - '!**/*.jar'
+    - '!**/*.tar'
+    - '!**/*.war'
+    - '!**/*.lo'
+    - '!**/*.log'
+    - '!**/*.mp3'
+    - '!**/*.wav'
+    - '!**/*.wma'
+    - '!**/*.mp4'
+    - '!**/*.avi'
+    - '!**/*.mkv'
+    - '!**/*.wmv'
+    - '!**/*.m4a'
+    - '!**/*.m4v'
+    - '!**/*.3gp'
+    - '!**/*.3g2'
+    - '!**/*.rm'
+    - '!**/*.mov'
+    - '!**/*.flv'
+    - '!**/*.iso'
+    - '!**/*.swf'
+    - '!**/*.flac'
+    - '!**/*.nar'
+    - '!**/*.o'
+    - '!**/*.ogg'
+    - '!**/*.otf'
+    - '!**/*.p'
+    - '!**/*.pdf'
+    - '!**/*.doc'
+    - '!**/*.docx'
+    - '!**/*.xls'
+    - '!**/*.xlsx'
+    - '!**/*.map'
+    - '!**/*.out'
+    - '!**/*.ppt'
+    - '!**/*.pptx'
+    - '!**/*.pkl'
+    - '!**/*.pickle'
+    - '!**/*.pyc'
+    - '!**/*.pyd'
+    - '!**/*.pyo'
+    - '!**/*.pub'
+    - '!**/*.pem'
+    - '!**/*.rkt'
+    - '!**/*.so'
+    - '!**/*.ss'
+    - '!**/*.eot'
+    - '!**/*.exe'
+    - '!**/*.pb.go'
+    - '!**/*.pb.gw.go'
+    - '!**/*.lock'
+    - '!**/*.ttf'
+    - '!**/*.yaml'
+    - '!**/*.yml'
+    - '!**/*.xml'
+    - '!**/*.cfg'
+    - '!**/*.toml'
+    - '!**/*.ini'
+    - '!**/*.mod'
+    - '!**/*.sum'
+    - '!**/*.work'
+    - '!**/*.mmd'
+    - '!**/*.svg'
+    - '!**/*.jpeg'
+    - '!**/*.jpg'
+    - '!**/*.png'
+    - '!**/*.gif'
+    - '!**/*.bmp'
+    - '!**/*.tiff'
+    - '!**/*.webm'
+    - '!**/*.woff'
+    - '!**/*.woff2'
+    - '!**/*.dot'
+    - '!**/*.md5sum'
+    - '!**/*.wasm'
+    - '!**/*.snap'
+    - '!**/*.parquet'
+    - '!**/gen/**'
+    - '!**/_gen/**'
+    - '!**/generated/**'
+    - '!**/@generated/**'
+    - '!**/vendor/**'
+    - '!**/*.min.js'
+    - '!**/*.min.js.map'
+    - '!**/*.min.js.css'
+    - '!**/*.tfstate'
+    - '!**/*.tfstate.backup'
+  path_instructions:
+    - path: src/main/webapp/**/*.ts
+      instructions: >-
+        angular_style:https://angular.io/guide/styleguide;methods_in_html:false;lazy_loading:true;code_reuse:true;tests:meaningful;types:PascalCase;enums:PascalCase;funcs:camelCase;props:camelCase;no_priv_prefix:true;strings:single_quotes;localize:true;btns:functionality;links:navigation;icons_text:newline;labels:associate;code_style:arrow_funcs,curly_braces,open_braces_same_line,indent_4;memory_leak_prevention:true;routes:naming_schema;chart_framework:ngx-charts;responsive_layout:true
+    - path: src/main/java/**/*.java
+      instructions: >-
+        naming:CamelCase;
+        principles:{single_responsibility,small_methods,no_duplication};
+        db:{perf_queries,datetime_not_timestamp};
+        rest:{stateless,singleton,delegate_logic,http_only,minimal_dtos};
+        dtos:{java_records,no_entities,min_data,single_resp};
+        di:constructor_injection; kiss:simple_code;
+        file_handling:os_indep_paths;
+        practices:{least_access,avoid_transactions,code_reuse,static_member_ref,prefer_primitives};
+        sql:{param_annotation,uppercase,avoid_subqueries};java:avoid_star_imports
+    - path: src/test/javascript/spec/**/*.ts
+      instructions: >-
+        jest: true; mock: NgMocks; bad_practices: avoid_full_module_import;
+        perf_improvements: mock_irrelevant_deps; service_testing:
+        mock_http_for_logic; no_schema: avoid_NO_ERRORS_SCHEMA;
+        expectation_specificity: true; solutions: {boolean: toBeTrue/False,
+        reference: toBe, existence: toBeNull/NotNull, undefined: toBeUndefined,
+        class_obj: toContainEntries/toEqual, spy_calls: {not_called:
+        not.toHaveBeenCalled, once: toHaveBeenCalledOnce, with_value:
+        toHaveBeenCalledWith|toHaveBeenCalledExactlyOnceWith}}
+    - path: src/test/java/**/*.java
+      instructions: >-
+        test_naming: descriptive; test_size: small_specific; fixed_data: true;
+        junit5_features: true; assert_use: assertThat; assert_specificity: true;
+        archunit_use: enforce_package_rules; db_query_count_tests:
+        track_performance; util_service_factory_pattern: true; avoid_db_access:
+        true; mock_strategy: static_mocks; context_restart_minimize: true
+    - path: src/main/webapp/**/*.html
+      instructions: >-
+        @if and @for are new and valid Angular syntax replacing *ngIf and
+        *ngFor. They should always be used over the old style.
+    - path: src/main/webapp/i18n/de/**/*.json
+      instructions: >-
+        German language translations should be informal (dutzen) and should
+        never be formal (sietzen). So the user should always be addressed with
+        "du/dein" and never with "sie/ihr".
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches: []
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      disabled_rules:
+        - EN_UNPAIRED_BRACKETS
+      disabled_categories:
+        - TYPOS
+        - TYPOGRAPHY
+        - CASING
+      enabled_only: false
+      level: default
+      enabled_rules: []
+      enabled_categories: []
+    biome:
+      enabled: true
+    hadolint:
+      enabled: true
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: true
+      level: '5'
+    golangci-lint:
+      enabled: true
+    ast-grep:
+      packages: []
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: true
+chat:
+  auto_reply: true
+knowledge_base:
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+
+
+
+================================================
+FILE: configs/javascript/coderabbit-google-style.yaml
+================================================
+language: "en"
+
+early_access: false
+
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/*.css"
+      instructions: |
+        "Review the CSS code against the google css style guide and point out any mismatches. Ensure that:
+        - The code adheres to best practices associated with CSS.
+        - The code adheres to best practices recommended by lighthouse or similar tools for performance.
+        - The code adheres to similar naming conventions for classes, ids."
+    - path: "**/*.html"
+      instructions: |
+        "Review the HTML code against the google html style guide and point out any mismatches. Ensure that:
+        - The code adheres to best practices recommended by lighthouse or similar tools for performance."
+    - path: "**/*.js,**/*.ts"
+      instructions: |
+        "Review the JAVASCRIPT code against the google javascript style guide and point out any mismatches. Ensure that:
+        - The code adheres to best practices associated with React.
+        - The code adheres to best practices associated with React PWA.
+        - The code adheres to best practices associated with SPA.
+        - The code adheres to best practices recommended by lighthouse or similar tools for performance.
+        - The code adheres to similar naming conventions for components, views, methods."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "master"
+      - "dev"
+      - "feat/*"
+      - "feat-*"
+      - "release-*"
+
+chat:
+  auto_reply: true
+
+
+
+
+================================================
+FILE: configs/javascript/coderabbit-mocha-google.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - development
+      - feat/.*
+  path_instructions:
+    - path: "**/*.js"
+      instructions:
+        "Review the JavaScript code for conformity with the Google
+        JavaScript style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions:
+        "Assess the unit test code employing the Mocha testing framework.
+        Test descriptions must be sufficiently detailed to clarify the
+        purpose of each test."
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/javascript/javascript-mocha-config.yaml
+================================================
+language: "ja"
+early_access: false
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: false
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/*.js"
+      instructions: "Review the JavaScript code for conformity with the Google JavaScript style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the unit test code employing the Mocha testing framework. Confirm that:
+        - The tests adhere to Mocha's established best practices.
+        - Test descriptions are sufficiently detailed to clarify the purpose of each test."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/javascript/mocha-google-style-japan-config.yaml
+================================================
+language: "ja-JP"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/*.js"
+      instructions: "Review the JavaScript code for conformity with the Google JavaScript style guide, highlighting any deviations."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the unit test code employing the Mocha testing framework. Confirm that:
+        - The tests adhere to Mocha's established best practices.
+        - Test descriptions are sufficiently detailed to clarify the purpose of each test."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "develop"
+      - "feature/*"
+chat:
+  auto_reply: true
+
+
+================================================
+FILE: configs/javascript/react-mui-style-config.yaml
+================================================
+language: "en-US"
+early_access: false
+reviews:
+  path_instructions:
+    - path: "*"
+      instructions: |
+        Review the JavaScript code against the following rules:
+        - No new libraries are added.
+        - Only functional components, no class components.
+        - No commented code.
+        - No Console.log.
+        - Pascalcase for components, routes and pages. Example, catalogueIndex.js -> WRONG, CatalogueIndex.js -> CORRECT 
+        - Follow Camelcase. Example, Is-Open -> WRONG, is_open -> WRONG, isOpen -> WRONG, saveProfileModalIsOpen -> CORRECT, openStateSaveProfileModal -> CORRECT, isSaveProfileModalOpen -> CORRECT
+        - State management, useState is preferred and redux is preferred. Example, const [isSaveProfileModalOpen, setIsSaveProfileModalOpen] = useState(false)\n const dispatch = useDispatch(); \nconst Button = useSelector((state) => state.nav.Button) \ndispatch(setButton(buttons[0]));
+        - MaterialUI is the preferred library.
+        - Avoid the container and item layout model, use display flex and flex properties within the sx part of a Grid tag. Example, WRONG -> <Grid container xs={6} md={12}> <Grid item> …, CORRECT -> <Grid sx={{display “flex”, flexDirection “row”, width isMobile ? “50%” “100%”> <Grid> …
+        - No secret, API key, ssh key or any sensitive information should be hard coded and pushed.
+
+
+
+================================================
+FILE: configs/monorepo/nestjs-nextjs-monorepo-config.yaml
+================================================
+language: 'en'
+early_access: true
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_instructions:
+    - path: 'apps/services/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - NestJS architecture, including modules, services, and controllers.
+        - Dependency injection patterns and service encapsulation.
+        - Integration and unit testing coverage and practices."
+    - path: 'apps/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - NextJS best practices, including file structure, API routes, and static generation methods.
+        - Efficient state management and server-side rendering techniques.
+        - Optimal use of TypeScript for component and utility type safety."
+    - path: 'libs/services/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - Shared services and modules that can be utilized across NestJS apps.
+        - Proper implementation of NestJS providers, including custom providers.
+        - Adherence to NestJS module encapsulation and isolation principles."
+    - path: 'libs/shared/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+         - Cross-application utility functions, types, and constants.
+         - TypeScript best practices to ensure type safety and reusability.
+         - Documentation and examples for library consumers."
+    - path: 'libs/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - Reusability of components and hooks across different NextJS apps.
+        - TypeScript usage for defining props and exporting types.
+        - Effective tree-shaking and bundling practices."
+    - path: 'scripts/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - Script efficiency, readability, and maintainability.
+        - Usage of environmental variables and configuration files for flexibility.
+        - Integration with NX workspace utilities and commands."
+    - path: 'infra/src/dsl/**/*'
+      instructions: |
+        "Confirm that the code adheres to the following:
+        - The clarity and expressiveness of the DSL syntax.
+        - Integration with Helm charts and Kubernetes resources.
+        - Documentation on how to use the DSL to create complex Helm values."
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - 'main'
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/nestjs/nestjs-docker-config.yaml
+================================================
+language: en
+early_access: false
+reviews:
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.github/workflows/*"
+    - "!**/node_modules/**"  # Exclude dependencies
+    - "!**/dist/**"          # Exclude build files
+  path_instructions:
+    - path: "src/**/*.{ts,js}"
+      instructions: "Review the TypeScript/JavaScript code for NestJS best practices, dependency injection, module structure, and potential bugs. Ensure that the code adheres to TypeScript's typing system and modern standards."
+    - path: "src/**/*.spec.ts"
+      instructions: "Review the unit tests, ensuring proper NestJS testing techniques (using TestingModule, mocks, etc.). Check for completeness and coverage."
+    - path: "manifests/**/*.{yaml,yml}"
+      instructions: "Review the kubernetes manifests used in Github workflows."
+    - path: "**/Dockerfile"
+      instructions: "Review the Dockerfile for best practices in building, optimizing, and running a NestJS application."
+    - path: "**/quickstart-services.yml"
+      instructions: "Review Docker Compose configurations for environment setup, ensuring proper service configuration, network setup, and environment variables handling."
+    - path: "**/quickstart-services-ai.yml"
+      instructions: "Review Docker Compose configurations for environment setup, ensuring proper service configuration, network setup, and environment variables handling."
+    - path: "**/quickstart-services-ai-debug.yml"
+      instructions: "Review Docker Compose configurations for environment setup, ensuring proper service configuration, network setup, and environment variables handling."
+    - path: "**/quickstart-services-kratos-debug.yml"
+      instructions: "Review Docker Compose configurations for environment setup, ensuring proper service configuration, network setup, and environment variables handling."
+    - path: "**/*.md"
+      instructions: "Ensure the documentation is clear, concise, and up-to-date, with accurate instructions for running the NestJS application in Docker."
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/nodejs/coderabbit-nestjs-style.yaml
+================================================
+language: "en"
+
+early_access: false
+
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**/*.js"
+      instructions: "Review the JavaScript code for conformity with the Google JavaScript style guide, highlighting any deviations."
+    - path: "**/*.ts"
+      instructions: |
+        "Review the JavaScript code for conformity with the Google JavaScript style guide, highlighting any deviations. Ensure that:
+        - The code adheres to best practices associated with nodejs.
+        - The code adheres to best practices associated with nestjs framework.
+        - The code adheres to best practices recommended for performance.
+        - The code adheres to similar naming conventions for controllers, models, services, methods, variables."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "master"
+      - "dev"
+      - "feat/*"
+      - "feat-*"
+      - "release-*"
+      - "Shiksha-2.0"
+
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/nuxt/coderabbit-vue-typescript.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: true
+reviews:
+  path_filters:
+    - "!**/*.xml"
+    - "!**/*.yaml"
+    - "!components/Ui/**"
+  path_instructions:
+    -   path: "**/*.vue"
+        instructions: |
+          Review Vue files for a Nuxt3 project. Ensure that:
+          - The `<script>` section adheres to TypeScript guidelines and best practices, including:
+            - Proper type annotations and usage.
+            - Usage of modern TypeScript features.
+            - Avoidance of any type-related issues or anti-patterns.
+          - The `<template>` section uses proper HTML and follows TailwindCSS guidelines, including:
+            - Correct usage of TailwindCSS utility classes for styling.
+            - Semantic HTML structure and accessibility considerations.
+          - The overall file adheres to Nuxt3 conventions and best practices, such as:
+            - Correct usage of Nuxt3-specific features like composables, plugins, and auto-imported components.
+            - Efficient use of the Composition API and reactive data handling.
+    -   path: "**/*.ts"
+        instructions: |
+          Review the TypeScript code files for the project. Ensure that:
+          - The code adheres to TypeScript best practices and guidelines, including:
+            - Proper type annotations and usage.
+            - Utilization of modern TypeScript features (e.g., optional chaining, nullish coalescing).
+            - Avoidance of any type-related issues or anti-patterns.
+          - The code follows general software engineering best practices, such as:
+            - Modular and maintainable code structure.
+            - Clear and concise documentation and comments where necessary.
+            - Efficient and readable code with a focus on performance and security.
+  profile: "assertive"
+  request_changes_workflow: true
+
+
+
+================================================
+FILE: configs/python/coderabbit-python-portal.yaml
+================================================
+# .coderabbit.yaml
+language: en
+early_access: true
+enable_free_tier: true
+reviews:
+  enabled: true
+  profile: chill
+  instructions: >-
+    # Code Review Instructions
+
+    - Ensure the code follows best practices and coding standards.
+    - For **Python** code, follow
+      [PEP 20](https://www.python.org/dev/peps/pep-0020/) and
+      [CEP-8](https://gist.github.com/reactive-firewall/b7ee98df9e636a51806e62ef9c4ab161)
+      standards.
+    - For **BASH** and **Shellscript** code, follow
+      [Pure BASH Bible](https://github.com/dylanaraps/pure-bash-bible) and
+      [CEP-5](https://gist.github.com/reactive-firewall/3d2bd3cf37f87974df6f7bee31a05a89)
+      standards.
+    - Check all **BASH** files start with an
+      [extensive disclaimer](https://gist.github.com/reactive-firewall/866b42d175ae3ebefcb2a5878b30ea17).
+    - Check for security vulnerabilities and potential issues.
+    - Ensure the code follows the **DRY, AHA, and SOLID** principles.
+
+    # Documentation Review Instructions
+    - Verify that documentation and comments are clear and comprehensive.
+    - Verify that documentation and comments are free of spelling mistakes.
+    - Verify that technical documentation includes a "References" section at
+      the end of documentation, using the same format as actual RFCs, with
+      both "Normative References" and "Informative References".
+
+    # Test Code Review Instructions
+    - Ensure that test code is automated, comprehensive, and follows testing best practices.
+    - Verify that all critical functionality is covered by tests.
+    - Ensure that test code follow
+      [CEP-8](https://gist.github.com/reactive-firewall/d840ee9990e65f302ce2a8d78ebe73f6)
+
+    # Misc.
+    - Confirm that the code meets the project's requirements and objectives.
+    - Confirm that copyright years are up-to date whenever a file is changed.
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: '@coderabbitai summary'
+  auto_title_placeholder: '@coderabbitai'
+  review_status: true
+  poem: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  changed_files_summary: true
+  labeling_instructions:
+    - label: Python Lang
+      instructions: Apply when the PR/MR contains changes to python source-code.
+    - label: Bash Lang
+      instructions: >-
+        Apply when the PR/MR contains changes to shell-scripts or BASH code
+        snippets.
+    - label: Make Lang
+      instructions: >-
+        Apply when the PR/MR contains changes to the file `Makefile` or makefile
+        code snippets.
+    - label: Documentation
+      instructions: >-
+        Apply whenever project documentation (namely markdown source-code) is
+        updated by the PR/MR. Also apply when PR contains a commit with a commit
+        message prefixed with "[DOCUMENTATION] "
+    - label: Linter
+      instructions: >-
+        Apply when the purpose of the PR/MR is related to fixing the feedback
+        from a linter. Also apply if suggested fixes are used and improve the
+        code's compliance with the PEP-8 standard.
+  path_filters: ['!*.xc*/**', '!node_modules/**', '!dist/**', '!build/**', '!.git/**', '!venv/**', '!__pycache__/**']
+  path_instructions:
+    - path: README.md
+      instructions: >-
+        1. Consider the file 'README.md' the overview/introduction of the project.
+           Also consider the 'README.md' file the first place to look for project documentation.
+
+        2. When reviewing the file 'README.md' it should be linted with help
+           from the tools `markdownlint` and `languagetool`, pointing out any issues.
+
+        3. You may assume the file 'README.md' will contain GitHub flavor Markdown.
+    - path: '**/*.py'
+      instructions: >-
+        When reviewing Python code for this project:
+
+        1. Prioritize portability over clarity, especially when dealing with cross-Python compatibility. However, with the priority in mind, do still consider improvements to clarity when relevant.
+
+        2. As a general guideline, consider the code style advocated in the PEP 8 standard (excluding the use of spaces for indentation) and evaluate suggested changes for code style compliance.
+
+        3. As a style convention, consider the code style advocated in [CEP-8](https://gist.github.com/reactive-firewall/b7ee98df9e636a51806e62ef9c4ab161) and evaluate suggested changes for code style compliance.
+
+        4. As a general guideline, try to provide any relevant, official, and supporting documentation links to any tool's suggestions in review comments. This guideline is important for posterity.
+
+        5. As a general rule, undocumented function definitions and class definitions in the project's Python code are assumed incomplete. Please consider suggesting a short summary of the code for any of these incomplete definitions as docstrings when reviewing.
+
+        6. Verify Flake8's configuration file is located at ".flake8.ini"
+    - path: tests/*
+      instructions: >-
+        When reviewing test code:
+
+        1. Prioritize portability over clarity, especially when dealing with cross-Python compatibility. However, with the priority in mind, do still consider improvements to clarity when relevant.
+
+        2. As a general guideline, consider the code style advocated in the PEP 8 standard (excluding the use of spaces for indentation) and evaluate suggested changes for code style compliance.
+
+        3. As a style convention, consider the code style advocated in [CEP-8](https://gist.github.com/reactive-firewall/b7ee98df9e636a51806e62ef9c4ab161) and evaluate suggested changes for code style compliance, pointing out any violations discovered.
+
+        4. As a general guideline, try to provide any relevant, official, and supporting documentation links to any tool's suggestions in review comments. This guideline is important for posterity.
+
+        5. As a project rule, Python source files with names prefixed by the string "test_" and located in the project's "tests" directory are the project's unit-testing code. It is safe, albeit a heuristic, to assume these are considered part of the project's minimal acceptance testing unless a justifying exception to this assumption is documented.
+
+        6. As a project rule, any files without extensions and with names prefixed by either the string "check_" or the string "test_", and located in the project's "tests" directory, are the project's non-unit test code. "Non-unit test" in this context refers to any type of testing other than unit testing, such as (but not limited to) functional testing, style linting, regression testing, etc. It can also be assumed that non-unit testing code is usually written as Bash shell scripts.
+    - path: requirements.txt
+      instructions: >-
+        * The project's own Python dependencies are recorded in 'requirements.txt' for production code.
+
+        * The project's testing-specific Python dependencies are recorded in 'tests/requirements.txt' and are used for testing the project.
+
+        * The project's documentation-specific Python dependencies are recorded in 'docs/requirements.txt' and are used only for generating Python-focused documentation for the project. 'docs/requirements.txt' may be absent if not applicable.
+
+        Consider these 'requirements.txt' files the records of truth regarding project dependencies.
+    - path: tests/requirements.txt
+      instructions: >-
+        * The multicast project's own dependencies are recorded in
+        './requirements.txt' for production code.
+
+        * The multicast project's own test code dependencies are recorded in
+        'tests/requirements.txt' for testing the project.
+
+        Consider these the records of truth regarding project test code dependencies.
+    - path: .github/**
+      instructions: >-
+        * When the project is hosted on GitHub: All GitHub-specific configurations, templates, and tools should be found in the '.github' directory tree.
+
+        * 'actionlint' erroneously generates false positives when dealing with GitHub's `${{ ... }}` syntax in conditionals.
+
+        * 'actionlint' erroneously generates incorrect solutions when suggesting the removal of valid `${{ ... }}` syntax.
+    - path: docs/*
+      instructions: >-
+        When a project contains a `docs/` directory:
+
+        1. Consider the files in the `docs/` directory tree the core/main/in-depth documentation of the project. Also consider the 'docs/**.md' files the second place to look for project documentation after the 'README.md' file.
+
+        2. When reviewing the documentation files (e.g. `docs/**.md`), they should additionally be linted with help from the tool `markdownlint`, pointing out any issues.
+
+        3. When reviewing the documentation files in `docs/` directory, they should additionally be linted with help from the tool `languagetool`, pointing out any issues.
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches:
+      - stable
+      - master
+      - HOTFIX-*
+  tools:
+    languagetool:
+      enabled: true
+      language: en-US
+      configuration:
+        level: picky
+        mother_tongue: en
+        dictionary:
+          - 'reactive-firewall'
+          - 'CEP-9'
+          - 'CEP-8'
+          - 'CEP-7'
+          - 'CEP-5'
+          - 'Shellscript'
+          - 'bash'
+        disabled_rules:
+          - EN_QUOTES
+          - CONSECUTIVE_SPACES
+        enabled_rules:
+          - STYLE
+          - EN_CONTRACTION_SPELLING
+          - EN_WORD_COHERENCY
+          - IT_IS_OBVIOUS
+          - TWELFTH_OF_NEVER
+          - OXFORD_SPELLING
+          - PASSIVE_VOICE
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+      configuration:
+        extend_select:
+          - E  # Pycodestyle errors (style issues)
+          - F  # PyFlakes codes (logical errors)
+          - W  # Pycodestyle warnings
+          - N  # PEP 8 naming conventions
+        ignore:
+          - W191
+          - W391
+          - E117
+          - D208
+        line_length: 100
+        dummy_variable_rgx: '^(_.*|junk|extra)$'  # Variables starting with '_' or named 'junk' or 'extras', are considered dummy variables
+        external:
+          flake8-blind-except: {}
+          flake8-docstrings: {}
+          flake8-comprehensions: {}
+          flake8-debugger: {}
+          flake8-eradicate: {}
+          # Include other Flake8 plugins as needed
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+      configuration_file: ".yamllint.conf"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/python/coderabbit-wg-utilities.yaml
+================================================
+---
+language: en
+
+early_access: true
+
+reviews:
+  request_changes_workflow: false
+
+  high_level_summary: true
+
+  poem: false
+
+  review_status: true
+
+  collapse_walkthrough: true
+
+  path_filters:
+    - wg_utilities/**/*.py
+
+  path_instructions:
+    - path: wg_utilities/**/*.py
+      instructions: >-
+        Review the Python code against the PEP 8 style guide. Highlight any deviations,
+        including issues with variable names, function naming conventions, line length,
+        and use of spaces vs. tabs. Ensure the use of docstrings for functions and
+        classes.
+
+        Additionally, evaluate the Python code for functional efficiency and
+        optimization. Identify areas where the implementation could be improved, such
+        as suboptimal use of variables/memory, inefficient input/output operations, or
+        any other aspects that could hinder performance. Assess the clarity and
+        appropriateness of variable and function names in the context of their roles
+        within the code. Examine for potential logical errors or parts of the code that
+        might lead to unexpected behavior. Suggestions for enhancing the code's
+        efficiency and maintainability are highly encouraged.
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/python/pytest-google-style-config.yaml
+================================================
+language: "en"
+early_access: true
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  sequence_diagrams: true
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "src/**/*.py"
+      instructions: |
+        "Review the Python code for conformity with the Google Python style guide, highlighting any deviations. Confirm that:
+        - The docstrings are up-to-date with the implementations. Please highlight the outdated ones.
+        - When an API in a module changes, ensure that all modules that depend on the changed module are updated accordingly.
+        - When seeing a TODO comment, try to write code to complete the todo."
+    - path: "tests/**/*"
+      instructions: |
+        "Assess the unit test code employing the Pytest testing framework. Confirm that:
+        - The tests adhere to Pytest's established best practices.
+        - Test descriptions are sufficiently detailed to clarify the purpose of each test.
+        - The tests cover all methods, classes, and errors."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+    drafts: true
+    base_branches:
+      - "develop"
+      - "feat/*"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/python/python-ruff-config.yaml
+================================================
+language: "ja"
+early_access: false
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!.gitignore"
+    - "!backend/app/db/alembic_*"
+  path_instructions:
+    - path: "**/*.py"
+      instructions:
+        "Review the Python code for conformity with Ruff linter and formatter.\
+         Do not review the import path."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+  tools:
+    # デフォルトでONだが効いてるか不明なのであえて明示化
+    ruff:
+      enabled: true
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/react/coderabbit-jsx-google.yaml
+================================================
+language: en-US
+tone_instructions: ""
+early_access: true
+enable_free_tier: true
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  auto_title_placeholder: "@coderabbitai"
+  review_status: true
+  poem: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  path_filters: []
+  path_instructions:
+    - path: "**/*.jsx"
+      instructions: |
+        Review the JavaScript code against the Google JavaScript style guide and point out any mismatches
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches: []
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: default
+    biome:
+      enabled: true
+    hadolint:
+      enabled: true
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: true
+      level: default
+    golangci-lint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: true
+    detekt:
+      enabled: true
+    eslint:
+      enabled: true
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+
+
+
+================================================
+FILE: configs/react/coderabbit-react-ts.yaml
+================================================
+language: "en"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+    - "!**/__generated__/**"
+    - "!**/generated/**"
+    - "!**/*.json"
+    - "!**/*.svg"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.gif"
+    - "!**/*.lock"
+  path_instructions:
+    - path: "**/*.{ts,tsx}"
+      instructions:
+        "Review the Typescript and React code for conformity with best practices in React, Recoil,
+        Graphql, and Typescript. Highlight any deviations."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+    drafts: false
+    base_branches:
+      - "develop"
+      - "main"
+      - "release/.*"
+      - "feat/.*"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/rust/rust-quality-review-japan-config.yaml
+================================================
+language: "ja"
+early_access: false
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.toml"
+    - "!**/.c"
+    - "!**/CMakeLists.txt"
+  path_instructions:
+    - path: "**/*.rs"
+      instructions: |
+        あなたは @coderabbitai（別名 github-actions[bot]）で、OpenAIによって訓練された言語モデルです。
+        あなたの目的は、非常に経験豊富なソフトウェアエンジニアとして機能し、コードの一部を徹底的にレビューし、
+        以下のようなキーエリアを改善するためのコードスニペットを提案することです：
+          - ロジック
+          - セキュリティ
+          - パフォーマンス
+          - データ競合
+          - 一貫性
+          - エラー処理
+          - 保守性
+          - モジュール性
+          - 複雑性
+          - 最適化
+          - ベストプラクティス: DRY, SOLID, KISS
+        
+        些細なコードスタイルの問題や、コメント・ドキュメントの欠落についてはコメントしないでください。
+        重要な問題を特定し、解決して全体的なコード品質を向上させることを目指してくださいが、細かい問題は意図的に無視してください。
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "develop"
+      - "feature/*"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/solidity/coderabbit-hardhat-review.yaml
+================================================
+reviews:
+  path_filters:
+    - "!v1/pkg/**"
+    - "!v2/pkg/**"
+    - "!v1/typechain-types/**"
+    - "!v2/types/**"
+    - "!v1/docs/**"
+    - "!v2/docs/**"
+    - "!v1/data/**"
+    - "!v2/data/**"
+  path_instructions:
+    - path: "contracts/**"
+      instructions: >-
+        Review the Solidity contracts for security vulnerabilities and best practices.
+    - path: "test/**"
+      instructions: >-
+        Review the test files for proper coverage, edge cases, and best practices.
+    - path: "scripts/**"
+      instructions: >-
+        Review the Hardhat scripts for best practices.
+    - path: "tasks/**"
+      instructions: >-
+        Review the Hardhat tasks for best practices.
+  auto_review:
+    base_branches:
+      - main
+  poem: false
+  collapse_walkthrough: true
+
+
+
+================================================
+FILE: configs/testing/cypress-enterprise-config.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+tone_instructions: 'You are an expert code reviewer in Java, TypeScript, JavaScript, and NodeJS. You work in an enterprise software developer team, providing concise and clear code review advice.You only elaborate or provide detailed explanations when requested.'
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["pg", "release"]
+  path_instructions:
+    - path: "app/client/cypress/**/**.*"
+      instructions: |
+        Review the following e2e test code written using the Cypress test library. Ensure that:
+        - Follow best practices for Cypress code and e2e automation. 
+        - Avoid using cy.wait in code.
+        - Avoid using cy.pause in code.
+        - Avoid using agHelper.sleep().
+        - Use locator variables for locators and do not use plain strings.
+        - Use data-* attributes for selectors.
+        - Avoid Xpaths, Attributes and CSS path.
+        - Avoid selectors like .btn.submit or button[type=submit].
+        - Perform logins via API with LoginFromAPI.
+        - Perform logout via API with LogOutviaAPI.
+        - Perform signup via API with SignupFromAPI.
+        - Avoid using it.only.
+        - Avoid using after and aftereach in test cases.
+        - Use multiple assertions for expect statements.
+        - Avoid using strings for assertions.
+        - Do not use duplicate filenames even with different paths.
+        - Avoid using agHelper.Sleep, this.Sleep in any file in code.
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/typescript/coderabbit-vitest.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
+language: "en"
+early_access: true
+reviews:
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!dist/**"
+  path_instructions:
+    - path: "__tests__/**.*"
+      instructions: |
+        "Assess the unit test code employing the Vitest testing framework. Confirm that:
+        - The tests adhere to Vitest's established best practices.
+        - Test descriptions are sufficiently detailed to clarify the purpose of each test."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - "main"
+      - "next"
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/typescript/enterprise-typescript-standards-config.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
+# https://docs.coderabbit.ai/guides/customize-coderabbit
+
+language: "en-GB"
+early_access: true
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "SWEEP"
+    drafts: false
+    base_branches:
+      - main
+      - release/**
+      - develop
+  path_instructions:
+    - path: "*"
+      instructions:
+        "All character sets need to be in UTF-8.\n
+        Lines need to end with LF (line feed).\n
+        Spaces need to be utilized for indentation instead of tabs.\n
+        A newline must be inserted at the end of the file.\n
+        Trim all trailing whitespaces.\n
+        Ensure that lines align visually.\n
+        Maximum line length must be 120 characters.\n
+        Avoid keeping blank lines in code.\n
+        Indents on empty lines should not be maintained.\n
+        Spaces after commas are required.\n
+        Ensure spaces are present around all operators.\n
+        Avoid space before comma.\n
+        Leftover TODOs in the code should be handled.\n
+        Remove any console.log statements.\n
+        Name Test Files Descriptively: Adopt the .spec.ts extension and maintain a corresponding filename to
+          the source file being tested, and place the test files in the same directory as your source code to
+          ensure that new code is being tested promptly.\n
+        Describe what Your Test Cases Cover: Use understandable and clear language for both the describe and
+          it blocks to specify what function is being tested and what the expected outcome is.\n
+        Cover One Aspect in Each Test: While writing tests, make sure each test covers only one aspect of the
+          functionality. Multiple assertions can be made but they should be testing the same thing.\n
+        Ensure Test Cases Are Independent: Write tests that are independent and can be executed in any order.
+          Each test should not rely on other tests.\n
+        Avoid Duplication of Logic in Tests: Keep your tests DRY (Don't Repeat Yourself) but don't over
+          abstract that it makes the tests hard to understand or follow.\n
+        Perform Testing for Edge Cases: Write separate tests for edge cases where the function behaves differently.\n
+        Focus on Functionality, not Implementation: Verify the functionality provided by the code, not its
+          internal implementation, while testing.\n
+        Mock External Dependencies: Mock out external modules and dependencies to ensure each test is isolated\n
+        Use beforeEach and afterEach for test Setup and Cleanup.\n
+        Ensure Self-Documenting Code: Aim to make your code self-explanatory through clear naming and
+          structure. The less time a developer has to spend understanding the code, the better.\n
+        Follow the YAGNI Principle: 'You aren't gonna need it' is a principle that prevents developers from
+          adding functionality until it is necessary. This can help keep your codebase lean and simple.\n
+        Externalizing User-visible Strings: Ensuring all user-facing texts (such as messages, labels, and
+          instructions) are sourced from external resource files. This makes it easier to update or translate them
+          without having to modify the codebase.\n
+        Avoiding Concatenation of Translated Strings: Concatenation might change the meaning of a sentence
+          when it is translated to another language due to differences in grammar or sentence structure. Instead,
+          use  templates or positional parameters."
+
+    - path: "**/*.ts"
+      instructions:
+        "In Typescript files, continuation indent size needs to be 4 spaces.\n
+        Multiline array initializer expressions in Typescript must not be aligned.\n
+        Binary operations in Typescript across multiple lines should not be aligned.\n
+        Multiline chained methods in Typescript should not be aligned.\n
+        Extends lists in Typescript across multiple lines should not be aligned.\n
+        For loops in Typescript across multiple lines should be aligned.\n
+        Parameters in Typescript across multiple lines should be aligned.\n
+        Calls in Typescript across multiple lines should not be aligned.\n
+        Multiline ternary operations in Typescript should not be aligned.\n
+        Object properties and var statements in Typescript should not be aligned.\n
+        Binary operation signs in Typescript need to be placed on the next line.\n
+        Insert blank lines after imports and around classes, functions, and methods in Typescript.\n
+        For 'if' and 'for loops' in Typescript, always use braces.\n
+        Avoid placing 'catch' parentheses on a new line in Typescript.\n
+        In Typescript, place the chained call dot on a new line.\n
+        Remove trailing comma in Typescript.\n
+        Union types, binary operations, ternary operations, and var declarations in Typescript need to be
+        wrapped on every item.\n
+        Binary operations, call parameters, for statements, imports, method parameters, object literals,
+        object types, and union types need to be split into lines when wrapped in Typescript.\n
+        Spaces after colons, optional parameters, and generator mults are required in Typescript.\n
+        Spaces should not be utilized within parentheses but should be utilized within object literal braces in Typescript.\n
+        Spaces need to be utilized within array initializer brackets in Typescript.\n
+        Explicit types for vars fields, function returns, and function expression returns in TypeScript need to be set.\n
+        Space before async arrow left parentheses in TypeScript is required.\n
+        Space before function left parentheses and class left brace in Typescript is desirable.\n
+        Prefer 'AS' for type casting in TypeScript.\n
+        Space is required before method call parentheses in TypeScript.\n
+        Space before Method Left Brace needs to be utilized in Typescript.\n
+        Space before Switch Parentheses is necessary in Typescript.\n
+        Space before Catch Left Brace is required in Typescript.\n
+        Utilize space before Catch Parentheses in Typescript.\n
+        Space before Catch Keyword is necessary in Typescript.\n
+        Make sure to use space before ASync Arrow LeftParen in TypeScript.\n
+        Make sure to use space before Type Colon in TypeScript.\n
+        Avoid space before Property Colon in TypeScript.\n
+        Utilize the space before Colon in TypeScript.\n
+        Always prefer 'import type' over 'import' when importing in TypeScript.\n
+        Always use 'public' modifier in TypeScript.\n
+        Always use property prefix.\n
+        Adopt the camelCase convention for naming functions. Ensure the names are clear and descriptive of the
+         function's purpose.\n
+        Enforce Single Responsibility Principle for every function. Make sure each function performs one task only.\n
+        Maintain brevity for functions. Limit each function to about 10-20 lines.\n
+        Avoid using too many input parameters for functions. Try to limit input arguments to 3-4. If there are
+         more, consider passing an object.\n
+        Apply early exits in functions. If a function fails to meet its purpose due to unsatisfied inputs,
+        ensure it returns or throws an error early.\n
+        Avoid side effects within functions. Don't let a function modify any states or objects beyond its
+        scope, it should only depend on input arguments to produce its output.\n
+        Implement descriptive variable names within functions.\n
+        Address potential errors with measures such as try/catch blocks, error returns, or error callback functions.\n
+        If you observe any repeated code, create a new function. If a function becomes too complex, decompose
+        it into smaller ones.\n
+        Use PascalCase convention for naming classes. Make sure that the names are clear, relevant, and
+        communicate the object's purpose.\n
+        Adhere to the Single Responsibility Principle. Each class should have one responsibility or task.\n
+        Encapsulate data that changes for the same reasons. Variables that are often changed together should
+        be placed in the same class to improve data hiding and cohesion.\n
+        Implement encapsulation and data hiding. Keep instance variables protected and expose a minimal
+        necessary interface to the outside world.\n
+        Write methods that operate on an instance's variables. Try to minimize the number of methods that
+        access instance variables of other classes.\n
+        Ensure classes are immutable wherever possible. An immutable object remains the same across its entire
+         lifecycle, improving readability and runtime efficiency.\n
+        Use meaningful, descriptive variable and method names. This makes your classes more readable and self-explanatory.\n
+        Provide a clear, public API for your classes. It should be clear what methods can be called, what
+        parameters they require, and what they will return.\n
+        Prefer composition over inheritance. Composition provides better flexibility over inheritance. Avoid
+        deep inheritance trees.\n
+        Prefer explicit types over implicit types: Wherever possible, explicitly define the type of variables.
+         This makes the code more readable and robust to changes.\n
+        Use PascalCase for type names: Conventional in many programming communities, PascalCase ensures your
+        types are easily distinguished.\n
+        Avoid using any type: The any type is a powerful tool in TypeScript for working with dynamic content,
+        but regular use can undermine the benefits of type safety.\n
+        Use the unknown type for truly unknown types: If you're not sure what type a variable will be, use
+        unknown rather than any. This forces you to do type-checking before performing any actions on the variable.\n
+        Use type guards for runtime type-checking: Type guards are a way to check the type of an object within
+         a conditional statement. Use these to ensure your code is working with the correct types.\n
+        Create reusable type definitions: If the same type structure is used in multiple places, create a type
+         definition for it.\n
+        Use interface to describe object structure: TypeScript's interface keyword allows for powerful OOP techniques.\n
+        Use type aliases for complex or compound types: If a type involves unions, intersections, or other
+        complex structures, use a type alias to simplify.\n
+        Arrays and objects should have types defined: Array items and Object properties must have their types
+        clearly defined."
+
+    - path: "**/*.json"
+      instructions:
+        "Indent size for JSON files needs to be 2.\n
+        In JSON, an array wrapping needs to be split into lines.\n
+        Trailing commas in JSON need to be removed.\n
+        Object wrapping in JSON needs to be split into lines.\n
+        Avoid alignment of properties in JSON.\n
+        Space needs to be introduced after colon and comma in JSON.\n
+        Do not introduce space before colon or comma in JSON."
+
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/typescript/react-graphql-config.yaml
+================================================
+language: en
+early_access: false
+reviews:
+  high_level_summary: true
+  sequence_diagrams: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  changed_files_summary: true
+  path_filters:
+    - "!**/.github/**"
+    - "!**/node_modules/**"  # Exclude dependencies
+  path_instructions:
+    - path: "src/**/*.{ts,tsx,js}"
+      instructions: |
+        Review the React.js/TypeScript/JavaScript code for best practices and potential bugs.
+        Ensure that the code adheres to TypeScript's typing system and modern standards.
+        Ensure sufficient error handling and logging is present.
+        Check for common security vulnerabilities such as:
+        - SQL Injection
+        - XSS (Cross-Site Scripting)
+        - CSRF (Cross-Site Request Forgery)
+        - Insecure dependencies
+        - Sensitive data exposure
+    - path: "src/**/*.{graphql,gql}"
+      instructions: |
+        Review the GraphQL schema and queries for best practices, potential bugs, and adherence to the project's GraphQL standards.
+        Ensure that the schema is well-defined and queries are optimized.
+        Check for security vulnerabilities.
+    - path: "src/**/*.json"
+      instructions: |
+        Review the JSON files for correct syntax and structure.
+        Ensure that the configuration and data are accurate and follow the project's standards.
+        Check for sensitive data exposure and ensure that the data is properly validated.
+    - path: "public/**/*.html"
+      instructions: |
+        Review the HTML files for correct syntax and structure.
+        Ensure that the content is accessible, semantic, and follows the project's standards.
+    - path: "src/**/*.yaml"
+      instructions: |
+        Review the YAML files for correct syntax and structure.
+        Ensure that the configuration is accurate and follows the project's standards.
+        Check for potential security issues and ensure that the data is properly validated.
+    - path: "**/*.md"
+      instructions: "Ensure the documentation is clear, concise, and up-to-date, with accurate instructions."
+chat:
+  auto_reply: true
+
+
+
+
+================================================
+FILE: configs/typescript/typescript-google-style-config.yaml
+================================================
+# https://coderabbit.ai/docs/get-started/customize-coderabbit
+
+language: "ja"
+early_access: true
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "**.ts"
+      instructions: "Review the TypeScript code for conformity with the Google TypeScript style guide, highlighting any deviations."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - ":construction:"
+    drafts: false
+chat:
+  auto_reply: true
+
+
+
+================================================
+FILE: configs/unity/udonsharp-and-website-config.yaml
+================================================
+chat:
+  auto_reply: true
+early_access: true
+language: en
+reviews:
+  auto_review:
+    enabled: true
+  path_filters:
+    - '!Assets'
+    - '!Packages/com.vrchat.core.*/**/*'
+    - '!ProjectSettings'
+  path_instructions:
+    - instructions: This folder contains C# files, but these are UdonSharp and have different restrictions than standard C#. Please review with this in mind.
+      path: Assets/black.kit.*/Runtime/**/*
+    - instructions: Some files look broken, but they contain templates from Scriban. Please review with this in mind.
+      path: Website/**/*
+
+
+
+================================================
+FILE: configs/web-frontend/react-typescript-review-config.yaml
+================================================
+language: "en-US"
+early_access: true
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!**/.xml"
+  path_instructions:
+    - path: "src/**/*.js"
+      instructions: |
+        "Review JavaScript Code."
+    - path: "src/**/*.jsx"
+      instructions: |
+        "Review ReactJs Code."
+    - path: "src/**/*.ts"
+      instructions: |
+        "Review TypeScript Code."
+    - path: "src/**/*.tsx"
+      instructions: |
+        "Review ReactJs + TypeScript Code."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+    drafts: true
+    base_branches:
+      - "develop"
+      - "feature/*"
+chat:
+  auto_reply: true
+
+
+================================================
+FILE: configs/wordpress/coderabbit-wordpress-review.yaml
+================================================
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
+language: "en"
+chat:
+  auto_reply: true
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  path_filters:
+    - "!build/**"
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "develop"
+      - "add/.*"
+      - "fix/.*"
+      - "update/.*"
+  path_instructions:
+    - path: "**/*.{js,ts,tsx,jsx}"
+      instructions: |
+        "Perform a detailed review of the provided code with following key aspects in mind:
+          - Review the code to ensure it is well-structured and adheres to best practices.
+          - Verify compliance with WordPress coding standards.
+          - Ensure the code is well-documented.
+          - Check for security vulnerabilities and confirm the code is secure.
+          - Optimize the code for performance, removing any unnecessary elements.
+          - Validate JSDoc comments for accuracy, currency, and adherence to WordPress coding standards.
+          - Ensure each line comment concludes with a period.
+          - Confirm every JSDoc comment includes a @since tag indicating the next version of the plugin to include the code.
+          - Guarantee compatibility with the latest version of WordPress, avoiding deprecated functions or features."
+    - path: "**/*.{css,scss}"
+      instructions: |
+        "Perform a detailed review of the provided code with following key aspects in mind:
+          - Review the SCSS code to ensure it is well-structured and adheres to best practices.
+          - Convert dimensions greater than or equal to 3px to rem units using the to_rem function.
+          - Utilize variables for sizes and colors defined in src/content-helper/common/css/variables.scss instead of hardcoding values."
+    - path: "**/*.{html,php}"
+      instructions: |
+        "Perform a detailed review of the provided code with following key aspects in mind:
+          - Review the HTML and PHP code to ensure it is well-structured and adheres to best practices.
+          - Ensure the code follows WordPress coding standards and is well-documented.
+          - Confirm the code is secure and free from vulnerabilities.
+          - Optimize the code for performance, removing any unnecessary elements.
+          - Validate comments for accuracy, currency, and adherence to WordPress coding standards.
+          - Ensure each line comment concludes with a period.
+          - Verify code compatibility with the latest version of WordPress, avoiding deprecated functions or features."
+
+
+

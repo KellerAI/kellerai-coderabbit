@@ -1,0 +1,206 @@
+# CodeRabbit Configuration Template: React Projects
+# Inherits from: kellerai/coderabbit (organization baseline)
+#
+# This template extends the baseline configuration with React-specific settings
+# Apply this to React projects by copying to project root as .coderabbit.yaml
+
+# Override review focus for React projects
+reviews:
+  # Inherit base settings, override focus areas
+  focus:
+    - react_best_practices
+    - component_design
+    - hooks_usage
+    - performance
+    - accessibility
+    - security
+    - testing
+
+  # React-specific scope patterns
+  scope:
+    include:
+      - "src/**/*.tsx"
+      - "src/**/*.ts"
+      - "src/**/*.jsx"
+      - "src/**/*.js"
+      - "src/components/**"
+      - "src/hooks/**"
+      - "src/context/**"
+      - "package.json"
+      - "tsconfig.json"
+
+    exclude:
+      - "build/**"
+      - "dist/**"
+      - "coverage/**"
+      - "**/*.test.tsx"
+      - "**/*.test.jsx"
+      - "**/*.spec.tsx"
+      - "**/*.spec.jsx"
+      - "node_modules/**"
+      - "public/**"
+      - "*.config.js"
+
+# Language-specific settings (React uses TypeScript/JavaScript)
+languages:
+  typescript:
+    version: "5.0"
+    focus:
+      - type_safety
+      - react_patterns
+      - hooks_rules
+      - component_props
+
+  javascript:
+    version: "ES2022"
+    focus:
+      - modern_syntax
+      - react_patterns
+      - hooks_rules
+
+# React-specific patterns
+react:
+  # React version
+  version: "18"
+
+  # Review focus areas
+  focus:
+    - component_structure
+    - hooks_usage
+    - state_management
+    - props_validation
+    - performance_optimization
+    - accessibility
+    - error_boundaries
+
+  # Common React patterns to check
+  patterns:
+    # Enforce functional components
+    - id: prefer-functional-components
+      message: "Prefer functional components over class components"
+      severity: info
+
+    # Proper hook dependencies
+    - id: exhaustive-deps
+      message: "Ensure useEffect/useCallback/useMemo have correct dependencies"
+      severity: warning
+
+    # Avoid inline functions in JSX
+    - id: avoid-inline-functions
+      pattern: "onClick=\\{\\(\\)\\s*=>|onChange=\\{\\(\\)\\s*=>"
+      message: "Consider extracting inline arrow functions to avoid re-renders"
+      severity: info
+
+    # Require key prop in lists
+    - id: require-key-prop
+      message: "Array children should have key prop"
+      severity: error
+
+    # Accessibility checks
+    - id: jsx-a11y
+      message: "Ensure accessibility attributes are properly used"
+      severity: warning
+
+  # Component structure preferences
+  component_structure:
+    # Prefer named exports for components
+    prefer_named_exports: true
+
+    # Component file organization
+    file_organization:
+      - imports
+      - types/interfaces
+      - component
+      - styles
+      - exports
+
+  # State management patterns
+  state_management:
+    # Preferred state management
+    preferred_libraries:
+      - context_api
+      - zustand
+      - redux_toolkit
+
+    # Anti-patterns to avoid
+    avoid:
+      - prop_drilling_deep  # More than 3 levels
+      - excessive_useState  # More than 5 useState in one component
+
+  # Performance patterns
+  performance:
+    # Check for optimization opportunities
+    check_memo: true
+    check_use_callback: true
+    check_use_memo: true
+
+    # Bundle size considerations
+    check_imports: true
+
+# Comments customization for React
+comments:
+  max_comments: 35  # More comments for component complexity
+  style: detailed
+
+  # React-specific comment priorities
+  priorities:
+    - hooks_usage: high
+    - component_design: high
+    - performance: high
+    - accessibility: high
+    - state_management: medium
+    - styling: low
+
+# Quality checks for React
+quality_checks:
+  # Component documentation
+  component_documentation:
+    enabled: true
+    require_prop_types: true
+
+  # Accessibility compliance
+  accessibility:
+    enabled: true
+    wcag_level: "AA"
+
+  # Performance checks
+  performance:
+    enabled: true
+    check_bundle_size: true
+    check_render_count: true
+
+# Knowledge base - React specific files
+knowledge_base:
+  files:
+    - ".cursorrules"
+    - "CLAUDE.md"
+    - "package.json"
+    - "tsconfig.json"
+    - "docs/react-patterns.md"
+    - "docs/component-guidelines.md"
+    - "docs/hooks-best-practices.md"
+
+# Testing requirements for React
+testing:
+  # Required test types
+  required_tests:
+    - component_tests
+    - hook_tests
+    - integration_tests
+
+  # Testing library preferences
+  frameworks:
+    - jest
+    - react-testing-library
+    - vitest
+
+  # Coverage thresholds
+  coverage:
+    statements: 80
+    branches: 75
+    functions: 80
+    lines: 80
+
+# Performance settings for React projects
+performance:
+  max_review_time: 360  # 6 minutes for React projects

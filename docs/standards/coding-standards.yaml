@@ -1,0 +1,279 @@
+architecture:
+  pattern: "Layered Architecture"
+  description: "KellerAI uses a layered architecture pattern for maintainability and testability"
+  
+  layers:
+    controller:
+      responsibility: "API endpoints and request handling"
+      location: "api/ or controllers/"
+      dependencies: ["service"]
+    
+    service:
+      responsibility: "Business logic and orchestration"
+      location: "services/"
+      dependencies: ["repository"]
+    
+    repository:
+      responsibility: "Data access and persistence"
+      location: "repositories/"
+      dependencies: ["model"]
+    
+    model:
+      responsibility: "Domain entities and value objects"
+      location: "models/"
+      dependencies: []
+  
+  dependency_rules:
+    rule: "Dependencies flow inward only"
+    allowed: "Controller → Service → Repository → Model"
+    prohibited: "Repository → Controller, Model → Service"
+    rationale: "Prevent circular dependencies and maintain clear separation of concerns"
+  
+  async_required: true
+  dependency_injection: "Use FastAPI Depends() or similar DI framework"
+
+security:
+  authentication:
+    method: "JWT tokens"
+    algorithm: "HS256"
+    expiry: "24 hours"
+    refresh_tokens: true
+    storage: "HTTP-only cookies or Authorization header"
+  
+  authorization:
+    method: "Role-based access control (RBAC)"
+    decorator: "@require_auth"
+    admin_check: "@require_role('admin')"
+  
+  sensitive_data:
+    passwords:
+      hashing: "bcrypt with salt rounds >= 12"
+      storage: "Never store plaintext passwords"
+      validation: "Minimum 8 characters, complexity requirements"
+    
+    api_keys:
+      storage: "Environment variables or AWS Secrets Manager"
+      rotation: "Every 90 days"
+      never: "Never commit to version control"
+    
+    secrets:
+      manager: "AWS Secrets Manager or HashiCorp Vault"
+      access: "Retrieve at runtime, never hardcode"
+    
+    logging:
+      prohibited: "Never log passwords, tokens, PII, or credit cards"
+      redact: "Redact sensitive fields in debug logs"
+  
+  sql_injection:
+    method: "Parameterized queries only"
+    orm: "SQLAlchemy with ORM patterns (avoid raw SQL)"
+    prohibited: "String concatenation in SQL queries"
+    validation: "Validate and sanitize all user input"
+  
+  xss_prevention:
+    method: "Escape all user-generated content"
+    libraries: "Use framework-provided escaping (Jinja2, React)"
+    headers: "Set Content-Security-Policy headers"
+
+performance:
+  database:
+    connections:
+      pooling: "Required - use connection pooling"
+      pool_size: "10-20 connections"
+      timeout: "30 seconds"
+    
+    queries:
+      n_plus_one: "Use eager loading (joinedload, selectinload)"
+      indexes: "Required for all foreign keys and frequent query fields"
+      explain: "Run EXPLAIN on complex queries"
+    
+    caching:
+      strategy: "Redis for hot data"
+      ttl: "Set appropriate TTL based on data volatility"
+      invalidation: "Implement cache invalidation on updates"
+  
+  api:
+    pagination:
+      required: "All list endpoints must support pagination"
+      default_limit: 20
+      max_limit: 100
+      format: "?page=1&limit=20"
+    
+    rate_limiting:
+      user: "100 requests/minute"
+      ip: "500 requests/minute"
+      admin: "1000 requests/minute"
+    
+    timeout:
+      max: "30 seconds"
+      default: "10 seconds"
+    
+    response_size:
+      warning: "Responses > 1MB should be optimized"
+      max: "10MB hard limit"
+  
+  algorithms:
+    complexity:
+      target: "O(n log n) or better for hot paths"
+      avoid: "Nested loops on large datasets"
+      profile: "Profile performance-critical code"
+    
+    data_structures:
+      prefer: "Use appropriate data structures (dict for lookups, set for membership)"
+      avoid: "Linear search on large lists"
+
+testing:
+  framework: "pytest"
+  
+  structure:
+    unit: "tests/unit/"
+    integration: "tests/integration/"
+    e2e: "tests/e2e/"
+  
+  naming: "test_<function_name>_<scenario>"
+  
+  coverage:
+    minimum: 80
+    critical_paths: 90
+    goal: 95
+    exclude: "migrations/, __init__.py, config files"
+  
+  fixtures:
+    location: "conftest.py in each test directory"
+    scope: "Use appropriate scope (function, class, module, session)"
+  
+  mocking:
+    library: "pytest-mock or unittest.mock"
+    external_services: "Always mock external services and APIs"
+    database: "Use test database or in-memory SQLite for unit tests"
+  
+  async:
+    library: "pytest-asyncio for async tests"
+    decorator: "@pytest.mark.asyncio"
+  
+  quality:
+    assertions: "Use descriptive assertion messages"
+    independence: "Tests must be independent and order-agnostic"
+    cleanup: "Clean up resources in teardown or fixtures"
+
+documentation:
+  docstrings:
+    required_for:
+      - "All public functions and methods"
+      - "All classes"
+      - "All modules"
+    
+    style: "Google format"
+    
+    sections:
+      summary: "One-line description"
+      description: "Detailed explanation (optional)"
+      args: "Parameter descriptions with types"
+      returns: "Return value description with type"
+      raises: "Exception types and conditions"
+      examples: "Usage examples for complex functions"
+    
+    example: |
+      """
+      Retrieve user by ID from database.
+      
+      Args:
+          user_id: Unique identifier for the user
+          include_deleted: Whether to include soft-deleted users
+      
+      Returns:
+          User object with all fields populated
+      
+      Raises:
+          UserNotFoundError: If user with given ID doesn't exist
+          DatabaseError: If database connection fails
+      
+      Examples:
+          >>> user = get_user(123)
+          >>> print(user.email)
+          'user@example.com'
+      """
+  
+  type_hints:
+    required: true
+    style: "Python 3.10+ syntax (use | for Union, list[str] instead of List[str])"
+    generics: "Use typing.Generic for generic classes"
+    strict: "Enable mypy strict mode in CI/CD"
+  
+  inline_comments:
+    when: "Explain WHY, not WHAT"
+    avoid: "Obvious comments that restate the code"
+    prefer: "Self-documenting code with clear variable names"
+    required: "Complex algorithms, non-obvious optimizations, workarounds"
+  
+  api_documentation:
+    tool: "OpenAPI/Swagger for REST APIs"
+    generation: "Auto-generate from code annotations"
+    examples: "Include request/response examples"
+
+code_quality:
+  linting:
+    python: "ruff (replaces flake8, black, isort)"
+    javascript: "ESLint with Airbnb config"
+    config: "Lint configuration in project root"
+  
+  formatting:
+    python: "ruff format (Black-compatible)"
+    javascript: "Prettier"
+    line_length: 88
+    auto_format: "Format on save in IDE"
+  
+  complexity:
+    max_function_length: 50
+    max_file_length: 500
+    cyclomatic_complexity: 10
+    cognitive_complexity: 15
+  
+  imports:
+    order: ["stdlib", "third_party", "local"]
+    style: "One import per line, sorted alphabetically"
+    unused: "Remove unused imports (checked by linter)"
+
+error_handling:
+  exceptions:
+    custom: "Create custom exceptions for business errors"
+    hierarchy: "Inherit from appropriate base exceptions"
+    naming: "Suffix with 'Error' (e.g., UserNotFoundError)"
+  
+  handling:
+    global_handler: "At API boundary (FastAPI exception handlers)"
+    specific: "Catch specific exceptions, not bare except"
+    logging: "Log exceptions with context and stack trace"
+    user_facing: "Never expose stack traces to users"
+  
+  validation:
+    input: "Validate all user input at API boundary"
+    library: "Pydantic for data validation"
+    errors: "Return clear error messages with field names"
+  
+  logging:
+    format: "Structured logging (JSON)"
+    library: "structlog or Python logging with JSON formatter"
+    levels: "Use appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    context: "Include request ID, user ID, and relevant context"
+
+version_control:
+  branching:
+    strategy: "Git Flow"
+    main: "Production-ready code only"
+    develop: "Integration branch for features"
+    feature: "feature/description"
+    hotfix: "hotfix/description"
+    release: "release/v1.2.3"
+  
+  commits:
+    format: "Conventional Commits (feat, fix, docs, style, refactor, test, chore)"
+    message: "Clear, descriptive commit messages"
+    size: "Small, focused commits (one logical change per commit)"
+  
+  pull_requests:
+    title: "Clear, descriptive title"
+    description: "What, why, and how (use PR template)"
+    size: "Keep PRs small (<500 lines when possible)"
+    tests: "All tests must pass"
+    review: "Require at least one approval"

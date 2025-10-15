@@ -1,0 +1,215 @@
+# CodeRabbit Configuration Template: Node.js Projects
+# Inherits from: kellerai/coderabbit (organization baseline)
+#
+# This template extends the baseline configuration with Node.js-specific settings
+# Apply this to Node.js projects by copying to project root as .coderabbit.yaml
+
+# Language specification
+language: en-US
+
+# Custom tone instructions for Node.js projects
+tone_instructions: |
+  Focus on Node.js best practices including async/await patterns, proper error handling,
+  security considerations, and performance optimization. Provide constructive feedback
+  with code examples when suggesting improvements. Prioritize security and error handling
+  issues over style concerns.
+
+# Enable all features
+early_access: false
+enable_free_tier: false
+
+# Review configuration
+reviews:
+  # Enable high-level summary
+  high_level_summary: true
+  
+  # Review profile settings
+  profile: chill
+  
+  # Request changes workflow
+  request_changes_workflow: true
+  
+  # Enable poem generation
+  poem: true
+  
+  # Enable auto-review
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT REVIEW"
+      - "[DRAFT]"
+
+  # Path-specific instructions (migrated from focus/scope)
+  path_instructions:
+    - path: "**/*.js"
+      instructions: |
+        Node.js JavaScript Review Guidelines:
+        
+        ASYNC PATTERNS:
+        - Prefer async/await over callbacks for better readability
+        - Ensure all async functions have proper error handling with try-catch
+        - Avoid mixing callbacks and promises
+        - Check for proper Promise.all usage for parallel operations
+        
+        ERROR HANDLING:
+        - All async functions must have try-catch blocks
+        - Use centralized error handling middleware in Express apps
+        - Properly propagate errors up the call stack
+        - Include meaningful error messages and context
+        
+        BLOCKING OPERATIONS:
+        - Flag usage of fs.*Sync() methods - use async alternatives
+        - Flag usage of crypto.*Sync() methods - use async alternatives
+        - Check for CPU-intensive operations that should be offloaded
+        - Verify event loop isn't being blocked
+        
+        SECURITY:
+        - Verify sensitive data (API keys, tokens) comes from environment variables
+        - Check for SQL injection vulnerabilities in database queries
+        - Ensure input validation and sanitization
+        - Verify helmet middleware usage in Express apps
+        - Check for rate limiting on public endpoints
+        - Flag hardcoded secrets or credentials
+
+    - path: "**/*.ts"
+      instructions: |
+        Node.js TypeScript Review Guidelines:
+        
+        TYPE SAFETY:
+        - Verify proper type annotations for function parameters and return types
+        - Check for excessive use of 'any' type - suggest specific types
+        - Ensure interfaces/types are used for complex objects
+        - Verify generic types are properly constrained
+        
+        ASYNC PATTERNS (TypeScript-specific):
+        - Use Promise<T> return types for async functions
+        - Ensure async error handling preserves type information
+        - Check for proper typing of async iterators and generators
+        
+        Apply all JavaScript guidelines plus TypeScript-specific type safety.
+
+    - path: "routes/**"
+      instructions: |
+        Express Routes Review:
+        - Verify proper HTTP method usage (GET, POST, PUT, DELETE, PATCH)
+        - Check for appropriate status codes (200, 201, 400, 401, 403, 404, 500)
+        - Ensure input validation middleware is used
+        - Verify authentication/authorization middleware where needed
+        - Check for proper error handling and response formatting
+
+    - path: "middleware/**"
+      instructions: |
+        Express Middleware Review:
+        - Verify proper next() calls to avoid hanging requests
+        - Check error handling middleware signature (err, req, res, next)
+        - Ensure middleware doesn't block event loop
+        - Verify proper async middleware error propagation
+        - Check for proper cleanup in middleware
+
+    - path: "controllers/**"
+      instructions: |
+        Controller Review:
+        - Verify proper separation of concerns (controllers vs services)
+        - Check for proper error handling and status codes
+        - Ensure input validation before processing
+        - Verify no business logic in controllers (delegate to services)
+        - Check for proper async/await usage
+
+    - path: "services/**"
+      instructions: |
+        Service Layer Review:
+        - Verify business logic is properly encapsulated
+        - Check for proper error handling and meaningful error messages
+        - Ensure services are stateless and testable
+        - Verify proper database connection handling
+        - Check for N+1 query problems
+        - Verify connection pooling for databases
+
+    - path: "models/**"
+      instructions: |
+        Data Model Review:
+        - Verify proper data validation at model level
+        - Check for SQL injection prevention
+        - Ensure proper indexing considerations
+        - Verify relationships are correctly defined
+        - Check for proper timestamp handling (createdAt, updatedAt)
+
+    - path: "package.json"
+      instructions: |
+        Package.json Review:
+        - Check for known security vulnerabilities in dependencies
+        - Verify version ranges are appropriate (prefer caret ^ ranges)
+        - Ensure devDependencies are separated from dependencies
+        - Check for outdated major versions
+        - Verify scripts are well-defined and documented
+
+    - path: "package-lock.json"
+      instructions: |
+        Package-lock.json Review:
+        - Verify lock file is in sync with package.json
+        - Check for security vulnerabilities in dependency tree
+        - Flag unexpected major version changes
+
+  # Tools configuration (migrated from languages section)
+  tools:
+    # JavaScript linting
+    eslint:
+      enabled: true
+      config: ".eslintrc"
+    
+    # Code formatting
+    prettier:
+      enabled: true
+      config: ".prettierrc"
+
+# Chat configuration
+chat:
+  auto_reply: true
+
+# Knowledge base configuration
+knowledge_base:
+  # Project documentation
+  learnings:
+    scope: project
+  
+  # Code guidelines with file patterns
+  code_guidelines:
+    filePatterns:
+      # API Design Guidelines
+      - path: "docs/api-design.md"
+        instructions: |
+          Apply REST API design principles from project documentation:
+          - Consistent error response format
+          - Proper HTTP status code usage
+          - RESTful resource naming conventions
+          - API versioning strategy
+
+      # Error Handling Guidelines
+      - path: "docs/error-handling.md"
+        instructions: |
+          Follow project error handling patterns:
+          - Centralized error handling middleware
+          - Consistent error object structure
+          - Proper error logging strategy
+          - User-friendly error messages
+
+      # Security Guidelines
+      - path: "docs/security-guidelines.md"
+        instructions: |
+          Enforce project security requirements:
+          - Authentication and authorization patterns
+          - Rate limiting configuration
+          - Input sanitization standards
+          - Secrets management practices
+
+      # Project-specific rules
+      - path: ".cursorrules"
+        instructions: "Apply project-specific coding standards and patterns defined in .cursorrules"
+      
+      - path: "CLAUDE.md"
+        instructions: "Follow development workflow and architectural decisions documented in CLAUDE.md"
+
+# Code generation settings
+code_generation:
+  enabled: true

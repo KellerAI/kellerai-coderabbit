@@ -1,0 +1,207 @@
+name: Configuration Testing
+
+on:
+  pull_request:
+    paths:
+      - '**.yaml'
+      - '**.yml'
+      - 'templates/**'
+      - '.github/workflows/config-test.yml'
+
+jobs:
+  test-configuration:
+    name: Test Configuration Inheritance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml jsonschema
+
+      - name: Test configuration inheritance
+        run: |
+          python - << 'EOF'
+          import yaml
+          import json
+          from pathlib import Path
+          from typing import Dict, Any
+
+          def deep_merge(base: Dict[Any, Any], override: Dict[Any, Any]) -> Dict[Any, Any]:
+              """Deep merge two dictionaries, simulating CodeRabbit inheritance"""
+              result = base.copy()
+
+              for key, value in override.items():
+                  if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                      result[key] = deep_merge(result[key], value)
+                  elif key in result and isinstance(result[key], list) and isinstance(value, list):
+                      # For lists, merge unique values
+                      result[key] = result[key] + [v for v in value if v not in result[key]]
+                  else:
+                      result[key] = value
+
+              return result
+
+          def test_template_inheritance(base_path: Path, template_path: Path) -> bool:
+              """Test that template properly inherits from base configuration"""
+              print(f"\nTesting inheritance: {template_path.parent.name}")
+
+              try:
+                  # Load base configuration
+                  with open(base_path, 'r') as f:
+                      base_config = yaml.safe_load(f)
+
+                  # Load template configuration
+                  with open(template_path, 'r') as f:
+                      template_config = yaml.safe_load(f)
+
+                  # Simulate inheritance
+                  merged_config = deep_merge(base_config, template_config)
+
+                  # Validate merged configuration has required keys
+                  required_keys = ['reviews', 'comments']
+                  for key in required_keys:
+                      if key not in merged_config:
+                          print(f"  ❌ ERROR: Missing required key '{key}' after inheritance")
+                          return False
+
+                  # Check that template doesn't break base settings
+                  if 'reviews' in merged_config:
+                      if 'profile' in merged_config['reviews']:
+                          profile = merged_config['reviews']['profile']
+                          if profile not in ['chill', 'assertive', 'custom']:
+                              print(f"  ❌ ERROR: Invalid review profile '{profile}'")
+                              return False
+
+                  print(f"  ✅ {template_path.parent.name} template inherits correctly")
+
+                  # Print summary of overrides
+                  if template_config:
+                      print(f"  📝 Template overrides:")
+                      for key in template_config.keys():
+                          print(f"     - {key}")
+
+                  return True
+
+              except Exception as e:
+                  print(f"  ❌ ERROR: {e}")
+                  return False
+
+          # Test each template
+          base_config = Path('.coderabbit.yaml')
+          if not base_config.exists():
+              print("❌ Base configuration .coderabbit.yaml not found")
+              exit(1)
+
+          templates_dir = Path('templates')
+          if not templates_dir.exists():
+              print("⚠️  No templates directory found - skipping template tests")
+              exit(0)
+
+          all_passed = True
+          template_count = 0
+
+          for template_config in templates_dir.rglob('.coderabbit.yaml'):
+              template_count += 1
+              if not test_template_inheritance(base_config, template_config):
+                  all_passed = False
+
+          if template_count == 0:
+              print("⚠️  No template configurations found")
+          elif all_passed:
+              print(f"\n✅ All {template_count} template(s) passed inheritance tests")
+          else:
+              print("\n❌ Some templates failed inheritance tests")
+              exit(1)
+          EOF
+
+      - name: Validate template completeness
+        run: |
+          python - << 'EOF'
+          import yaml
+          from pathlib import Path
+
+          def validate_template_completeness(template_path: Path) -> bool:
+              """Validate that template has appropriate overrides for its technology"""
+              print(f"\nValidating {template_path.parent.name} template completeness...")
+
+              try:
+                  with open(template_path, 'r') as f:
+                      config = yaml.safe_load(f)
+
+                  template_type = template_path.parent.name
+
+                  # Technology-specific validation
+                  language_map = {
+                      'typescript': 'typescript',
+                      'python': 'python',
+                      'react': 'typescript',
+                      'nodejs': 'javascript'
+                  }
+
+                  expected_language = language_map.get(template_type)
+                  if expected_language:
+                      if 'languages' not in config or expected_language not in config.get('languages', {}):
+                          print(f"  ⚠️  WARNING: Expected '{expected_language}' language configuration")
+
+                  print(f"  ✅ {template_type} template is complete")
+                  return True
+
+              except Exception as e:
+                  print(f"  ❌ ERROR: {e}")
+                  return False
+
+          templates_dir = Path('templates')
+          if not templates_dir.exists():
+              print("⚠️  No templates directory found - skipping completeness check")
+              exit(0)
+
+          all_passed = True
+          for template_config in templates_dir.rglob('.coderabbit.yaml'):
+              if not validate_template_completeness(template_config):
+                  all_passed = False
+
+          if not all_passed:
+              exit(1)
+
+          print("\n✅ All templates are complete")
+          EOF
+
+      - name: Test configuration comments
+        run: |
+          echo "Checking for helpful comments in configurations..."
+
+          # Check that configurations have helpful comments
+          for config in .coderabbit.yaml templates/**/.coderabbit.yaml; do
+            if [ -f "$config" ]; then
+              comment_count=$(grep -c "^#" "$config" || true)
+              if [ $comment_count -lt 5 ]; then
+                echo "⚠️  WARNING: $config has few comments ($comment_count)"
+              else
+                echo "✅ $config has adequate comments ($comment_count)"
+              fi
+            fi
+          done
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Configuration Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ $? -eq 0 ]; then
+            echo "✅ All configuration tests passed" >> $GITHUB_STEP_SUMMARY
+            echo "- Inheritance testing completed" >> $GITHUB_STEP_SUMMARY
+            echo "- Template validation successful" >> $GITHUB_STEP_SUMMARY
+            echo "- Configuration comments verified" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Configuration testing failed" >> $GITHUB_STEP_SUMMARY
+            echo "Please review errors above and fix configuration issues" >> $GITHUB_STEP_SUMMARY
+          fi

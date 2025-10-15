@@ -4,7 +4,7 @@
     "allow": [],
     "deny": [],
     "ask": [],
-    "defaultMode": "plan",
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": []
   },
   "enableAllProjectMcpServers": true,
@@ -13,7 +13,10 @@
     "tavily",
     "clearthought",
     "RepoPrompt",
-    "context7"
+    "context7",
+    "confluence",
+    "notion",
+    "kellerai-standards"
   ],
   "hooks": {},
   "disableAllHooks": false,

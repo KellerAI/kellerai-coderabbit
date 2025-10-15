@@ -1,0 +1,148 @@
+# lancedb-test-connection
+
+## Summary
+Repository: coderabbitai/lancedb-test-connection
+Commit: 3cae424a1d44ae8e784b825e492da57e3faba951
+Files analyzed: 3
+
+Estimated tokens: 715
+
+## File Tree
+Directory structure:
+└── coderabbitai-lancedb-test-connection/
+    ├── README.md
+    ├── aws.js
+    └── package.json
+
+
+## Content
+================================================
+FILE: README.md
+================================================
+# LanceDB AWS S3 Connection Test
+
+This project demonstrates connecting to LanceDB using AWS S3 as the object store backend.
+
+## Prerequisites
+
+- Node.js (version 22 LTS preferred)
+- AWS credentials configured
+- Access to an S3 bucket
+
+## Setup
+
+1. **Ensure Node.js is installed:**
+   
+   Check if Node.js is installed:
+   ```bash
+   node --version
+   ```
+   
+   If not installed, download and install from [nodejs.org](https://nodejs.org/)
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Update S3 bucket path:**
+   
+   Edit `aws.js` and replace `<BUCKET_NAME>` with your actual S3 bucket name:
+   ```javascript
+   const S3_PATH = "s3://your-bucket-name/test/coderabbit/data"
+   ```
+
+## Required AWS Permissions
+
+Your AWS credentials need the following S3 permissions for the specified bucket:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::<bucket>/<prefix>/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": "arn:aws:s3:::<bucket>",
+            "Condition": {
+                "StringLike": {
+                    "s3:prefix": [
+                        "<prefix>/*"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+## Running the Script
+
+```bash
+node aws.js
+```
+
+
+
+================================================
+FILE: aws.js
+================================================
+import * as lancedb from "@lancedb/lancedb";
+
+const S3_PATH = "s3://<BUCKET_NAME>/coderabbit/data/kb";
+
+const main = async () => {
+  console.log(`\nConnecting to lancedb s3 object store using path: ${S3_PATH}`);
+  const db = await lancedb.connect(S3_PATH);
+
+  const tables = await db.tableNames();
+
+  if (tables.length === 0) {
+    console.log("No tables found");
+    return;
+  }
+
+  for (const table of tables) {
+    console.log(`\n-----Table data: ${table} -----`);
+
+    const tbl = await db.openTable(table);
+    const data = await tbl.query().limit(10).toArray();
+
+    console.log(data);
+  }
+};
+
+main().catch(console.error);
+
+
+
+================================================
+FILE: package.json
+================================================
+{
+  "name": "lancedb",
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "description": "",
+  "dependencies": {
+    "@lancedb/lancedb": "^0.21.0",
+    "apache-arrow": "^18.1.0"
+  }
+}
+
+
+

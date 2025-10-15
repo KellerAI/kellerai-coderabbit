@@ -1,0 +1,789 @@
+# KellerAI Python Development Standards
+# .cursorrules for Python Projects
+# Version: 1.0
+# Last Updated: 2025-10-14
+
+## Project Context
+This ruleset applies to KellerAI Python projects focusing on AI/ML, data processing, PDF processing, and backend API development.
+
+## Code Style and Formatting
+
+### PEP 8 Compliance
+- Follow PEP 8 style guidelines strictly
+- Maximum line length: 100 characters (not 79 for modern readability)
+- Use 4 spaces for indentation (never tabs)
+- Two blank lines between top-level functions and classes
+- One blank line between methods in a class
+- Imports should be organized: standard library, third-party, local (separated by blank lines)
+
+### Naming Conventions
+- **Modules**: `lowercase_with_underscores.py`
+- **Classes**: `PascalCase` (e.g., `DataProcessor`, `PDFExtractor`)
+- **Functions/Methods**: `snake_case` (e.g., `process_document`, `extract_text`)
+- **Constants**: `UPPER_CASE_WITH_UNDERSCORES` (e.g., `MAX_RETRIES`, `DEFAULT_TIMEOUT`)
+- **Private attributes**: Prefix with single underscore `_private_method`
+- **Module-level private**: Prefix with single underscore `_internal_function`
+- **Name mangling (avoid unless necessary)**: Double underscore `__mangled`
+
+### Import Organization
+```python
+# Standard library imports
+import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+# Third-party imports
+import numpy as np
+import pandas as pd
+import torch
+from fastapi import FastAPI, HTTPException
+
+# Local application imports
+from app.core.config import settings
+from app.models.base import BaseModel
+from app.utils.validators import validate_input
+```
+
+## Type Hints and Type Safety
+
+### Mandatory Type Hints
+- ALL public functions must have complete type hints
+- ALL function parameters must be typed
+- ALL function return types must be specified
+- Use `typing` module for complex types
+
+```python
+# GOOD
+def process_data(
+    input_path: Path,
+    batch_size: int = 32,
+    use_cache: bool = True
+) -> Dict[str, Any]:
+    """Process data from input path."""
+    pass
+
+# BAD - Missing type hints
+def process_data(input_path, batch_size=32, use_cache=True):
+    pass
+```
+
+### Type Hints Best Practices
+- Use `Optional[T]` for values that can be None
+- Use `Union[A, B]` for multiple possible types
+- Use `List[T]`, `Dict[K, V]` for generic containers
+- Use `Callable[[Args], ReturnType]` for function types
+- Use `Protocol` for structural subtyping (duck typing)
+- Use `TypeVar` for generic functions
+- Avoid `Any` unless absolutely necessary
+
+```python
+from typing import List, Optional, Union, Protocol, TypeVar, Callable
+
+T = TypeVar('T')
+
+class Processor(Protocol):
+    """Protocol for data processors."""
+    def process(self, data: bytes) -> str: ...
+
+def batch_process(
+    items: List[T],
+    processor: Callable[[T], str],
+    max_workers: Optional[int] = None
+) -> List[str]:
+    """Process items in batches."""
+    pass
+```
+
+## Documentation Standards
+
+### Docstring Format: Google Style
+- Use Google-style docstrings for all public functions, classes, and modules
+- Include all sections: summary, description, Args, Returns, Raises, Examples
+- Keep summary line under 80 characters
+- Use present tense ("Return" not "Returns")
+
+```python
+def extract_pdf_text(
+    pdf_path: Path,
+    page_range: Optional[tuple[int, int]] = None,
+    ocr_enabled: bool = False
+) -> str:
+    """Extract text content from PDF document.
+
+    This function reads a PDF file and extracts all text content using
+    PyPDF2 or OCR if enabled. It handles malformed PDFs gracefully and
+    supports pagination.
+
+    Args:
+        pdf_path: Path to the PDF file to process.
+        page_range: Optional tuple of (start_page, end_page) for partial extraction.
+            If None, extracts all pages. Pages are 0-indexed.
+        ocr_enabled: Whether to use OCR for scanned PDFs. Requires tesseract.
+
+    Returns:
+        Extracted text content as a single string. Pages are separated by
+        newline characters. Returns empty string if extraction fails.
+
+    Raises:
+        FileNotFoundError: If the PDF file does not exist.
+        ValueError: If page_range is invalid (start > end or negative).
+        PDFProcessingError: If PDF is corrupted or unreadable.
+
+    Examples:
+        >>> from pathlib import Path
+        >>> pdf_path = Path("document.pdf")
+        >>> text = extract_pdf_text(pdf_path)
+        >>> print(f"Extracted {len(text)} characters")
+
+        >>> # Extract specific pages with OCR
+        >>> text = extract_pdf_text(pdf_path, page_range=(0, 5), ocr_enabled=True)
+    """
+    pass
+```
+
+### Module-Level Docstrings
+```python
+"""PDF processing utilities for document extraction.
+
+This module provides comprehensive PDF text extraction with support for
+OCR, multi-page processing, and error handling. It serves as the core
+PDF processing layer for the KellerAI document pipeline.
+
+Typical usage example:
+    from app.pdf.extractor import extract_pdf_text
+
+    text = extract_pdf_text(Path("document.pdf"))
+    process_extracted_text(text)
+"""
+```
+
+### Class Docstrings
+```python
+class DocumentProcessor:
+    """Process and analyze document content for AI/ML pipelines.
+
+    This class handles document preprocessing, feature extraction, and
+    validation for machine learning models. It supports PDF, DOCX, and
+    plain text formats.
+
+    Attributes:
+        config: Configuration object with processing parameters.
+        model: Pre-trained model for text analysis.
+        cache_enabled: Whether to cache processed results.
+
+    Example:
+        >>> processor = DocumentProcessor(config)
+        >>> result = processor.process_document(document_path)
+        >>> print(result.confidence_score)
+    """
+```
+
+## Error Handling
+
+### Exception Handling Best Practices
+- Always catch specific exceptions, never bare `except:`
+- Use context managers for resource management
+- Log exceptions with appropriate context
+- Re-raise exceptions after logging if appropriate
+- Create custom exceptions for domain-specific errors
+
+```python
+# GOOD - Specific exception handling
+try:
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+except FileNotFoundError:
+    logger.error(f"Configuration file not found: {file_path}")
+    raise ConfigurationError(f"Missing config: {file_path}")
+except json.JSONDecodeError as e:
+    logger.error(f"Invalid JSON in {file_path}: {e}")
+    raise ConfigurationError(f"Malformed config: {file_path}")
+except Exception as e:
+    logger.exception(f"Unexpected error loading {file_path}")
+    raise
+
+# BAD - Bare except
+try:
+    data = process_data()
+except:  # NEVER do this
+    pass
+```
+
+### Custom Exceptions
+```python
+class KellerAIError(Exception):
+    """Base exception for all KellerAI errors."""
+    pass
+
+class DataValidationError(KellerAIError):
+    """Raised when data validation fails."""
+    pass
+
+class ModelInferenceError(KellerAIError):
+    """Raised when model inference fails."""
+    def __init__(self, model_name: str, message: str):
+        self.model_name = model_name
+        super().__init__(f"Model '{model_name}': {message}")
+```
+
+### Context Managers for Resources
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def managed_pdf_file(pdf_path: Path):
+    """Context manager for PDF file handling."""
+    pdf_file = None
+    try:
+        pdf_file = open_pdf(pdf_path)
+        yield pdf_file
+    finally:
+        if pdf_file is not None:
+            pdf_file.close()
+            logger.debug(f"Closed PDF file: {pdf_path}")
+```
+
+## AI/ML Specific Standards
+
+### Reproducibility Requirements
+- ALWAYS set random seeds for reproducibility
+- Log all hyperparameters
+- Version models and datasets
+- Track experiment metadata
+
+```python
+import random
+import numpy as np
+import torch
+
+def set_seed(seed: int = 42) -> None:
+    """Set random seeds for reproducibility.
+
+    Args:
+        seed: Random seed value. Default is 42.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    # For deterministic behavior (may impact performance)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+```
+
+### Model Development Standards
+- Document model architecture in docstrings
+- Include input/output tensor shapes in comments
+- Implement proper checkpointing
+- Handle GPU memory management
+- Log training metrics systematically
+
+```python
+class TextClassifier(nn.Module):
+    """BERT-based text classifier for document categorization.
+
+    Architecture:
+        - BERT base model (bert-base-uncased)
+        - Dropout layer (p=0.1)
+        - Linear classification layer
+
+    Input shape: (batch_size, sequence_length)
+    Output shape: (batch_size, num_classes)
+
+    Args:
+        num_classes: Number of classification categories.
+        dropout_prob: Dropout probability for regularization.
+        pretrained_model: Name of pretrained BERT model.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        dropout_prob: float = 0.1,
+        pretrained_model: str = "bert-base-uncased"
+    ):
+        super().__init__()
+        self.bert = BertModel.from_pretrained(pretrained_model)
+        self.dropout = nn.Dropout(dropout_prob)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, num_classes)
+
+    def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        """Forward pass through the model.
+
+        Args:
+            input_ids: Token indices (batch_size, seq_len)
+            attention_mask: Attention mask (batch_size, seq_len)
+
+        Returns:
+            Logits tensor (batch_size, num_classes)
+        """
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = outputs.pooler_output  # (batch_size, hidden_size)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)  # (batch_size, num_classes)
+        return logits
+```
+
+### Data Processing Standards
+- Validate data schemas rigorously
+- Handle missing values explicitly
+- Use vectorized operations (NumPy/Pandas)
+- Implement data pipeline logging
+- Document data transformations
+
+```python
+import pandera as pa
+from pandera import Column, DataFrameSchema
+
+# Define data schema
+customer_schema = DataFrameSchema({
+    "customer_id": Column(int, pa.Check.greater_than(0)),
+    "name": Column(str, nullable=False),
+    "email": Column(str, pa.Check.str_matches(r"^[\w\.-]+@[\w\.-]+\.\w+$")),
+    "age": Column(int, pa.Check.in_range(min_value=18, max_value=120)),
+    "signup_date": Column(pa.DateTime),
+})
+
+@pa.check_types
+def process_customer_data(df: pa.typing.DataFrame[customer_schema]) -> pd.DataFrame:
+    """Process and validate customer data.
+
+    Args:
+        df: Input DataFrame matching customer_schema.
+
+    Returns:
+        Processed DataFrame with additional features.
+    """
+    # Data validation happens automatically via decorator
+    df = df.copy()
+    df["account_age_days"] = (pd.Timestamp.now() - df["signup_date"]).dt.days
+    return df
+```
+
+## Performance Optimization
+
+### Prefer Vectorized Operations
+```python
+# GOOD - Vectorized NumPy operation
+import numpy as np
+result = np.sum(array * weights)
+
+# BAD - Python loop
+result = sum(array[i] * weights[i] for i in range(len(array)))
+```
+
+### Use Appropriate Data Structures
+```python
+# GOOD - Set for membership testing
+valid_ids = set(id_list)
+if user_id in valid_ids:  # O(1)
+    pass
+
+# BAD - List for membership testing
+valid_ids = id_list
+if user_id in valid_ids:  # O(n)
+    pass
+```
+
+### Profile Performance-Critical Code
+```python
+import cProfile
+import pstats
+
+def profile_function(func):
+    """Decorator to profile function performance."""
+    def wrapper(*args, **kwargs):
+        profiler = cProfile.Profile()
+        profiler.enable()
+        result = func(*args, **kwargs)
+        profiler.disable()
+        stats = pstats.Stats(profiler)
+        stats.sort_stats('cumtime')
+        stats.print_stats(10)
+        return result
+    return wrapper
+```
+
+## Security Standards
+
+### Input Validation
+- Validate ALL external inputs
+- Sanitize user-provided data
+- Use parameterized queries (never string formatting for SQL)
+- Validate file uploads (type, size, content)
+
+```python
+from pydantic import BaseModel, validator, Field
+
+class UserInput(BaseModel):
+    """Validated user input model."""
+    username: str = Field(..., min_length=3, max_length=50)
+    email: str
+    age: int = Field(..., ge=18, le=120)
+
+    @validator('email')
+    def validate_email(cls, v):
+        """Validate email format."""
+        import re
+        if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", v):
+            raise ValueError("Invalid email format")
+        return v.lower()
+
+    @validator('username')
+    def validate_username(cls, v):
+        """Validate username contains only safe characters."""
+        import re
+        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
+            raise ValueError("Username contains invalid characters")
+        return v
+```
+
+### Secrets Management
+```python
+# GOOD - Environment variables
+from app.core.config import settings
+
+database_url = settings.DATABASE_URL
+api_key = settings.API_KEY
+
+# BAD - Hardcoded secrets
+database_url = "postgresql://user:password@localhost/db"  # NEVER
+api_key = "sk-1234567890abcdef"  # NEVER
+```
+
+### SQL Injection Prevention
+```python
+# GOOD - Parameterized query
+cursor.execute(
+    "SELECT * FROM users WHERE email = %s AND status = %s",
+    (email, status)
+)
+
+# BAD - String formatting
+cursor.execute(
+    f"SELECT * FROM users WHERE email = '{email}' AND status = '{status}'"
+)
+```
+
+## Testing Standards
+
+### Test Coverage Requirements
+- Minimum 80% code coverage for all modules
+- 100% coverage for critical paths (security, data validation)
+- Test edge cases and error conditions
+- Use pytest as the testing framework
+
+### Test Structure (AAA Pattern)
+```python
+import pytest
+from pathlib import Path
+
+def test_extract_pdf_text_success():
+    """Test successful PDF text extraction."""
+    # Arrange
+    pdf_path = Path("tests/fixtures/sample.pdf")
+    expected_text = "Sample document content"
+
+    # Act
+    result = extract_pdf_text(pdf_path)
+
+    # Assert
+    assert expected_text in result
+    assert len(result) > 0
+    assert isinstance(result, str)
+
+def test_extract_pdf_text_file_not_found():
+    """Test PDF extraction with non-existent file."""
+    # Arrange
+    pdf_path = Path("nonexistent.pdf")
+
+    # Act & Assert
+    with pytest.raises(FileNotFoundError):
+        extract_pdf_text(pdf_path)
+
+@pytest.mark.parametrize("page_range,expected_pages", [
+    ((0, 1), 1),
+    ((0, 5), 5),
+    (None, 10),  # Full document
+])
+def test_extract_pdf_text_pagination(page_range, expected_pages):
+    """Test PDF extraction with different page ranges."""
+    # Arrange
+    pdf_path = Path("tests/fixtures/multi_page.pdf")
+
+    # Act
+    result = extract_pdf_text(pdf_path, page_range=page_range)
+
+    # Assert
+    page_count = result.count('\n\n') + 1
+    assert page_count == expected_pages
+```
+
+### Fixtures and Mocking
+```python
+import pytest
+from unittest.mock import Mock, patch
+
+@pytest.fixture
+def sample_config():
+    """Provide sample configuration for tests."""
+    return {
+        "batch_size": 32,
+        "model_name": "bert-base-uncased",
+        "max_length": 512,
+    }
+
+@pytest.fixture
+def mock_model():
+    """Provide mock model for testing."""
+    model = Mock()
+    model.predict.return_value = [0.9, 0.1]
+    return model
+
+def test_model_inference(mock_model, sample_config):
+    """Test model inference with mocked model."""
+    processor = ModelProcessor(mock_model, sample_config)
+    result = processor.process("test input")
+
+    assert result["confidence"] == 0.9
+    mock_model.predict.assert_called_once()
+```
+
+## Logging Standards
+
+### Logging Configuration
+```python
+import logging
+from pathlib import Path
+
+def setup_logging(log_level: str = "INFO", log_file: Optional[Path] = None) -> None:
+    """Configure application logging.
+
+    Args:
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        log_file: Optional file path for log output.
+    """
+    logging.basicConfig(
+        level=getattr(logging, log_level.upper()),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_file) if log_file else logging.NullHandler(),
+        ]
+    )
+```
+
+### Logging Best Practices
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def process_document(doc_path: Path) -> Dict[str, Any]:
+    """Process document with comprehensive logging."""
+    logger.info(f"Starting document processing: {doc_path}")
+
+    try:
+        # Log important operations
+        logger.debug(f"Reading document from {doc_path}")
+        content = read_document(doc_path)
+
+        logger.debug(f"Document size: {len(content)} bytes")
+        result = analyze_content(content)
+
+        logger.info(
+            f"Document processed successfully: {doc_path}, "
+            f"confidence={result['confidence']:.2f}"
+        )
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed to process document {doc_path}: {e}")
+        logger.exception("Full traceback:")  # Logs stack trace
+        raise
+```
+
+## API Development (FastAPI)
+
+### Endpoint Structure
+```python
+from fastapi import FastAPI, HTTPException, Depends, status
+from pydantic import BaseModel
+
+app = FastAPI(title="KellerAI API", version="1.0.0")
+
+class DocumentRequest(BaseModel):
+    """Request model for document processing."""
+    document_url: str
+    options: Dict[str, Any] = {}
+
+class DocumentResponse(BaseModel):
+    """Response model for document processing."""
+    document_id: str
+    status: str
+    confidence: float
+    extracted_text: str
+
+@app.post(
+    "/api/v1/documents/process",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["documents"]
+)
+async def process_document(
+    request: DocumentRequest,
+    api_key: str = Depends(verify_api_key)
+) -> DocumentResponse:
+    """Process document and extract information.
+
+    Args:
+        request: Document processing request.
+        api_key: API key for authentication.
+
+    Returns:
+        Processed document response.
+
+    Raises:
+        HTTPException: If processing fails or authentication fails.
+    """
+    logger.info(f"Processing document: {request.document_url}")
+
+    try:
+        result = await document_processor.process(request.document_url, request.options)
+        return DocumentResponse(**result)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid request: {str(e)}"
+        )
+    except Exception as e:
+        logger.exception("Document processing failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+```
+
+## Code Review Checklist
+
+Before submitting code for review, verify:
+
+- [ ] All functions have complete type hints
+- [ ] All public functions have Google-style docstrings
+- [ ] PEP 8 compliance (run `ruff check`)
+- [ ] No hardcoded secrets or credentials
+- [ ] Proper exception handling (no bare except)
+- [ ] Input validation for external data
+- [ ] Logging for important operations
+- [ ] Tests written with >80% coverage
+- [ ] No security vulnerabilities (run `bandit`)
+- [ ] Efficient data structures and algorithms
+- [ ] Random seeds set for ML reproducibility
+- [ ] Resources properly managed (context managers)
+- [ ] Error messages are clear and actionable
+
+## Common Anti-Patterns to Avoid
+
+### 1. Mutable Default Arguments
+```python
+# BAD
+def add_item(item, items=[]):  # Default list is shared!
+    items.append(item)
+    return items
+
+# GOOD
+def add_item(item, items: Optional[List] = None) -> List:
+    if items is None:
+        items = []
+    items.append(item)
+    return items
+```
+
+### 2. Bare Except Clauses
+```python
+# BAD
+try:
+    risky_operation()
+except:  # Catches everything including KeyboardInterrupt!
+    pass
+
+# GOOD
+try:
+    risky_operation()
+except (ValueError, KeyError) as e:
+    logger.error(f"Operation failed: {e}")
+    raise
+```
+
+### 3. String Formatting in SQL
+```python
+# BAD - SQL Injection risk
+query = f"SELECT * FROM users WHERE id = {user_id}"
+
+# GOOD - Parameterized query
+query = "SELECT * FROM users WHERE id = %s"
+cursor.execute(query, (user_id,))
+```
+
+### 4. Not Using Context Managers
+```python
+# BAD - Resource leak risk
+file = open("data.txt")
+data = file.read()
+file.close()  # May not execute if read() raises exception
+
+# GOOD - Guaranteed cleanup
+with open("data.txt") as file:
+    data = file.read()
+```
+
+### 5. Using `print()` Instead of `logging`
+```python
+# BAD
+print(f"Processing {filename}")  # No log levels, no configuration
+
+# GOOD
+logger.info(f"Processing {filename}")
+```
+
+## Tools and Automation
+
+### Required Development Tools
+- **Ruff**: Fast Python linter and formatter (`ruff check`, `ruff format`)
+- **MyPy**: Static type checker (`mypy .`)
+- **Pytest**: Testing framework (`pytest --cov=app --cov-report=html`)
+- **Bandit**: Security linter (`bandit -r app/`)
+- **Black** (optional): Code formatter if Ruff format not used
+
+### Pre-commit Hook Example
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-ll, -r, app/]
+```
+
+---
+
+**Last Updated**: 2025-10-14
+**Maintainer**: KellerAI Engineering Team
+**Questions**: Contact the platform team for clarifications

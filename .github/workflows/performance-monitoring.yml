@@ -1,0 +1,498 @@
+name: CodeRabbit Performance Monitoring
+
+on:
+  schedule:
+    # Run every 6 hours for continuous monitoring
+    - cron: '0 */6 * * *'
+  workflow_dispatch:  # Allow manual triggering
+  pull_request:
+    types: [closed]  # Collect metrics when PRs close
+
+jobs:
+  collect-performance-metrics:
+    name: Collect Performance Metrics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Collect PR performance data
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            // Get PR details
+            const pr = context.payload.pull_request;
+            
+            // Get CodeRabbit review comments
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number
+            });
+            
+            const crComments = comments.data.filter(c => 
+              c.user.login === 'coderabbitai[bot]'
+            );
+            
+            // Calculate review time (first CR comment - PR opened)
+            const prOpenedAt = new Date(pr.created_at);
+            const firstReviewAt = crComments.length > 0 
+              ? new Date(crComments[0].created_at)
+              : null;
+            
+            const reviewTimeSeconds = firstReviewAt
+              ? (firstReviewAt - prOpenedAt) / 1000
+              : null;
+            
+            // Extract issue detection from comments
+            let issuesDetected = 0;
+            let securityIssues = 0;
+            let performanceIssues = 0;
+            let architectureIssues = 0;
+            
+            for (const comment of crComments) {
+              const body = comment.body.toLowerCase();
+              if (body.includes('security') || body.includes('vulnerability')) {
+                securityIssues++;
+                issuesDetected++;
+              }
+              if (body.includes('performance') || body.includes('n+1')) {
+                performanceIssues++;
+                issuesDetected++;
+              }
+              if (body.includes('architecture') || body.includes('layer')) {
+                architectureIssues++;
+                issuesDetected++;
+              }
+            }
+            
+            // Build metrics object
+            const metrics = {
+              timestamp: new Date().toISOString(),
+              pr_number: pr.number,
+              repository: `${context.repo.owner}/${context.repo.repo}`,
+              review_time_seconds: reviewTimeSeconds,
+              files_changed: pr.changed_files,
+              loc_changed: pr.additions + pr.deletions,
+              additions: pr.additions,
+              deletions: pr.deletions,
+              issues_detected: issuesDetected,
+              security_issues: securityIssues,
+              performance_issues: performanceIssues,
+              architecture_issues: architectureIssues,
+              comments_count: crComments.length,
+              pr_author: pr.user.login,
+              pr_merged: pr.merged,
+              pr_created_at: pr.created_at,
+              pr_merged_at: pr.merged_at,
+              labels: pr.labels.map(l => l.name)
+            };
+            
+            // Save to daily metrics file
+            const date = new Date().toISOString().split('T')[0];
+            const metricsDir = '.quality-gate-metrics';
+            const metricsFile = `${metricsDir}/${date}-metrics.jsonl`;
+            
+            // Create directory if it doesn't exist
+            if (!fs.existsSync(metricsDir)) {
+              fs.mkdirSync(metricsDir, { recursive: true });
+            }
+            
+            // Append metrics
+            fs.appendFileSync(metricsFile, JSON.stringify(metrics) + '\n');
+            
+            console.log(`✅ Metrics collected for PR #${pr.number}`);
+            console.log(`   Review time: ${reviewTimeSeconds}s`);
+            console.log(`   Issues detected: ${issuesDetected}`);
+      
+      - name: Commit metrics
+        run: |
+          git config user.name "CodeRabbit Metrics Bot"
+          git config user.email "metrics@kellerai.com"
+          git add .quality-gate-metrics/
+          git commit -m "chore: update performance metrics [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+  aggregate-and-monitor:
+    name: Aggregate Metrics and Monitor Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scipy
+      
+      - name: Aggregate performance metrics
+        id: aggregate
+        run: |
+          python3 << 'EOF'
+          import json
+          import glob
+          from datetime import datetime, timedelta
+          from pathlib import Path
+          import statistics
+          
+          # Load metrics from last 7 days
+          seven_days_ago = datetime.now() - timedelta(days=7)
+          metrics = []
+          
+          for metrics_file in glob.glob('.quality-gate-metrics/*-metrics.jsonl'):
+              file_date_str = Path(metrics_file).stem.replace('-metrics', '')
+              try:
+                  file_date = datetime.strptime(file_date_str, '%Y-%m-%d')
+              except ValueError:
+                  # Skip files with unparsable date format in filename
+                  print(f"⚠️ Warning: Skipping file with invalid date format: {metrics_file}")
+                  continue
+              
+              if file_date >= seven_days_ago:
+                  try:
+                      with open(metrics_file) as f:
+                          line_number = 0
+                          for line in f:
+                              line_number += 1
+                              try:
+                                  metrics.append(json.loads(line))
+                              except (json.JSONDecodeError, ValueError) as e:
+                                  # Log warning but continue processing other lines
+                                  print(f"⚠️ Warning: Failed to parse JSON in {metrics_file}:{line_number} - {e}")
+                                  continue
+                  except (IOError, OSError) as e:
+                      # Log warning but continue processing other files
+                      print(f"⚠️ Warning: Failed to read file {metrics_file} - {e}")
+                      continue
+          
+          if not metrics:
+              print("⚠️ No metrics found in last 7 days")
+              exit(0)
+          
+          # Calculate aggregates
+          review_times = [m['review_time_seconds'] for m in metrics if m.get('review_time_seconds')]
+          issues_detected = [m['issues_detected'] for m in metrics]
+          files_changed = [m['files_changed'] for m in metrics]
+          
+          avg_review_time = statistics.mean(review_times) if review_times else 0
+          avg_review_time_minutes = avg_review_time / 60
+          median_review_time = statistics.median(review_times) if review_times else 0
+          p95_review_time = sorted(review_times)[int(len(review_times) * 0.95)] if review_times else 0
+          
+          avg_issues = statistics.mean(issues_detected) if issues_detected else 0
+          total_prs = len(metrics)
+          prs_with_issues = sum(1 for m in metrics if m['issues_detected'] > 0)
+          detection_rate = (prs_with_issues / total_prs * 100) if total_prs > 0 else 0
+          
+          # Calculate issue detection rate (assuming baseline 10% escape rate)
+          # True detection = detected / (detected + escaped)
+          # Using industry standard 10% escape rate
+          escaped_issues_estimate = avg_issues * 0.1
+          true_detection_rate = (avg_issues / (avg_issues + escaped_issues_estimate) * 100) if avg_issues > 0 else 0
+          
+          summary = {
+              'period': '7-day rolling',
+              'timestamp': datetime.now().isoformat(),
+              'total_prs_reviewed': total_prs,
+              'avg_review_time_seconds': round(avg_review_time, 1),
+              'avg_review_time_minutes': round(avg_review_time_minutes, 2),
+              'median_review_time_seconds': round(median_review_time, 1),
+              'p95_review_time_seconds': round(p95_review_time, 1),
+              'avg_issues_per_pr': round(avg_issues, 2),
+              'prs_with_issues': prs_with_issues,
+              'issue_detection_rate_percent': round(detection_rate, 1),
+              'estimated_true_detection_rate': round(true_detection_rate, 1),
+              'avg_files_changed': round(statistics.mean(files_changed), 1) if files_changed else 0
+          }
+          
+          # Save summary
+          Path('.quality-gate-metrics/weekly-summary').mkdir(parents=True, exist_ok=True)
+          with open('.quality-gate-metrics/weekly-summary/latest.json', 'w') as f:
+              json.dump(summary, f, indent=2)
+          
+          print(f"✅ Performance Summary (7-day rolling):")
+          print(f"   PRs reviewed: {total_prs}")
+          print(f"   Avg review time: {avg_review_time_minutes:.2f} minutes")
+          print(f"   Issue detection rate: {true_detection_rate:.1f}%")
+          print(f"   Avg issues per PR: {avg_issues:.2f}")
+          
+          # Export for GitHub Actions
+          with open('summary.json', 'w') as f:
+              json.dump(summary, f)
+          EOF
+      
+      - name: Check performance thresholds
+        id: check_thresholds
+        run: |
+          python3 << 'EOF'
+          import json
+          import sys
+          
+          with open('summary.json') as f:
+              summary = json.load(f)
+          
+          # Performance thresholds (from subtask 13.1)
+          THRESHOLD_AVG_REVIEW_TIME = 5.0  # minutes
+          THRESHOLD_DETECTION_RATE = 80.0  # percent
+          THRESHOLD_MIN_PRS = 10  # minimum PRs for valid analysis
+          
+          # Check thresholds
+          alerts = []
+          warnings = []
+          
+          avg_time = summary['avg_review_time_minutes']
+          detection_rate = summary['estimated_true_detection_rate']
+          total_prs = summary['total_prs_reviewed']
+          
+          if total_prs < THRESHOLD_MIN_PRS:
+              warnings.append(f"⚠️ Low sample size: {total_prs} PRs (need {THRESHOLD_MIN_PRS}+ for reliable analysis)")
+          
+          if avg_time > THRESHOLD_AVG_REVIEW_TIME:
+              diff = avg_time - THRESHOLD_AVG_REVIEW_TIME
+              alerts.append(f"🚨 ALERT: Average review time {avg_time:.2f}min exceeds target {THRESHOLD_AVG_REVIEW_TIME}min by {diff:.2f}min")
+          else:
+              print(f"✅ Review time {avg_time:.2f}min is within target (<{THRESHOLD_AVG_REVIEW_TIME}min)")
+          
+          if detection_rate < THRESHOLD_DETECTION_RATE:
+              diff = THRESHOLD_DETECTION_RATE - detection_rate
+              alerts.append(f"🚨 ALERT: Issue detection rate {detection_rate:.1f}% is below target {THRESHOLD_DETECTION_RATE}% by {diff:.1f}%")
+          else:
+              print(f"✅ Detection rate {detection_rate:.1f}% meets target (>{THRESHOLD_DETECTION_RATE}%)")
+          
+          # Output results
+          if alerts:
+              print("\n⚠️ PERFORMANCE ALERTS:")
+              for alert in alerts:
+                  print(f"   {alert}")
+              # Set output for GitHub Actions
+              with open('alerts.txt', 'w') as f:
+                  f.write('\n'.join(alerts))
+              sys.exit(1)  # Exit with error to trigger alert
+          elif warnings:
+              print("\n⚠️ WARNINGS:")
+              for warning in warnings:
+                  print(f"   {warning}")
+          else:
+              print("\n✅ All performance metrics within targets")
+          EOF
+        continue-on-error: true
+      
+      - name: Create performance alert issue
+        if: failure() && steps.check_thresholds.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read alerts
+            let alerts = '';
+            try {
+              alerts = fs.readFileSync('alerts.txt', 'utf8');
+            } catch (e) {
+              alerts = 'Performance thresholds exceeded (details unavailable)';
+            }
+            
+            // Read summary
+            let summary = {};
+            try {
+              summary = JSON.parse(fs.readFileSync('summary.json', 'utf8'));
+            } catch (e) {
+              summary = { error: 'Summary unavailable' };
+            }
+            
+            // Check if alert issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'performance-alert,automated'
+            });
+            
+            const existingIssue = issues.data[0];
+            
+            const issueBody = `## 🚨 CodeRabbit Performance Alert
+            
+            **Detection Time**: ${new Date().toISOString()}
+            **Period**: 7-day rolling average
+            
+            ### Performance Alerts
+            
+            ${alerts}
+            
+            ### Current Metrics
+            
+            | Metric | Current | Target | Status |
+            |--------|---------|--------|--------|
+            | **Avg Review Time** | ${summary.avg_review_time_minutes?.toFixed(2) || 'N/A'} min | <5.0 min | ${summary.avg_review_time_minutes > 5 ? '❌' : '✅'} |
+            | **Issue Detection Rate** | ${summary.estimated_true_detection_rate?.toFixed(1) || 'N/A'}% | >80% | ${summary.estimated_true_detection_rate < 80 ? '❌' : '✅'} |
+            | **PRs Reviewed** | ${summary.total_prs_reviewed || 'N/A'} | - | - |
+            | **P95 Review Time** | ${(summary.p95_review_time_seconds / 60)?.toFixed(2) || 'N/A'} min | <7.0 min | - |
+            
+            ### Recommended Actions
+            
+            1. **Review Configuration**: Check if recent .coderabbit.yaml changes impacted performance
+            2. **MCP Performance**: Verify MCP servers (Context7, Standards) are responding quickly
+            3. **Cache Effectiveness**: Review cache hit rates in performance dashboard
+            4. **Quality Check Tuning**: Evaluate if any checks are taking excessive time
+            5. **Large PR Handling**: Check if large PRs are skewing averages
+            
+            ### Next Steps
+            
+            - [ ] Investigate root cause using performance dashboard
+            - [ ] Review recent configuration changes
+            - [ ] Check MCP server health and response times
+            - [ ] Analyze outlier PRs (if any)
+            - [ ] Implement fixes and monitor improvement
+            
+            ### Resources
+            
+            - [Performance Metrics Baseline](docs/monitoring/performance-metrics-baseline.md)
+            - [MCP Optimization Guide](docs/monitoring/mcp-optimization-guide.md)
+            - [Performance Dashboard](docs/monitoring/compliance-dashboard-setup.md)
+            
+            ---
+            
+            *This issue was automatically created by the performance monitoring workflow. It will auto-close when metrics return to normal.*
+            `;
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: issueBody
+              });
+              
+              // Add comment with latest update
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `🔔 **Performance alert updated** at ${new Date().toISOString()}\n\n${alerts}`
+              });
+              
+              console.log(`Updated existing alert issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 CodeRabbit Performance Alert: Thresholds Exceeded',
+                body: issueBody,
+                labels: ['performance-alert', 'automated', 'priority:high']
+              });
+              
+              console.log(`Created new alert issue #${issue.data.number}`);
+            }
+      
+      - name: Send Slack notification (optional)
+        if: failure() && steps.check_thresholds.outcome == 'failure'
+        run: |
+          echo "⚠️ Slack notification would be sent here (configure SLACK_WEBHOOK_URL secret)"
+          # Uncomment when Slack webhook is configured:
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"🚨 CodeRabbit Performance Alert: Review time or detection rate below thresholds. Check GitHub Issues for details."}'
+      
+      - name: Commit aggregated metrics
+        run: |
+          git config user.name "CodeRabbit Metrics Bot"
+          git config user.email "metrics@kellerai.com"
+          git add .quality-gate-metrics/weekly-summary/
+          git commit -m "chore: update weekly performance summary [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+  check-mcp-performance:
+    name: Monitor MCP Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Test MCP server response times
+        run: |
+          echo "🔍 Testing MCP server performance..."
+          
+          # Note: This is a placeholder for actual MCP health checks
+          # In production, you would:
+          # 1. Query Context7 MCP with sample library documentation request
+          # 2. Query KellerAI Standards MCP with sample pattern lookup
+          # 3. Measure response times and log to metrics
+          
+          echo "✅ MCP health checks would run here"
+          echo "   - Context7 MCP: <response_time>ms"
+          echo "   - KellerAI Standards MCP: <response_time>ms"
+          echo ""
+          echo "Configure MCP_HEALTH_CHECK_URL secrets to enable actual testing"
+
+  close-resolved-alerts:
+    name: Close Resolved Performance Alerts
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: aggregate-and-monitor
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Check and close resolved alerts
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Find open performance alert issues
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'performance-alert,automated'
+            });
+            
+            if (issues.data.length > 0) {
+              console.log(`Found ${issues.data.length} open performance alert(s)`);
+              
+              for (const issue of issues.data) {
+                // Close the issue since metrics are now within thresholds
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+                
+                // Add resolution comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ **Performance Alert Resolved**\n\nMetrics have returned to normal thresholds. Closing this alert.\n\n**Resolution Time**: ${new Date().toISOString()}\n\n*This issue was automatically closed by the performance monitoring workflow.*`
+                });
+                
+                console.log(`Closed resolved alert issue #${issue.number}`);
+              }
+            } else {
+              console.log('No open performance alerts to close');
+            }

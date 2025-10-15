@@ -1,0 +1,418 @@
+name: Quality Gate Notifications
+
+# This workflow handles team notifications for blocked PRs and quality gate failures
+# Integrates with Slack, GitHub notifications, and escalation workflows
+
+on:
+  pull_request_review:
+    types: [submitted]
+  check_run:
+    types: [completed]
+  workflow_run:
+    workflows: ["Quality Gate Status Checks"]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  notify-blocked-pr:
+    name: Notify Team of Blocked PR
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.review.state == 'changes_requested' && 
+       github.event.review.user.login == 'coderabbitai[bot]') ||
+      (github.event.check_run.conclusion == 'failure' &&
+       github.event.check_run.name == 'CodeRabbit Quality Gates')
+    
+    steps:
+      - name: Extract PR information
+        id: pr_info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let pr_number, pr_title, pr_author, pr_url;
+            
+            if (context.eventName === 'pull_request_review') {
+              pr_number = context.payload.pull_request.number;
+              pr_title = context.payload.pull_request.title;
+              pr_author = context.payload.pull_request.user.login;
+              pr_url = context.payload.pull_request.html_url;
+            } else if (context.eventName === 'check_run') {
+              // Get PR from check run
+              const pulls = context.payload.check_run.pull_requests;
+              if (pulls && pulls.length > 0) {
+                pr_number = pulls[0].number;
+                pr_title = pulls[0].title;
+                pr_url = pulls[0].url;
+                
+                // Get full PR details for author
+                const { data: pr } = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr_number
+                });
+                pr_author = pr.user.login;
+              }
+            }
+            
+            core.setOutput('pr_number', pr_number);
+            core.setOutput('pr_title', pr_title);
+            core.setOutput('pr_author', pr_author);
+            core.setOutput('pr_url', pr_url);
+
+      - name: Get failed checks
+        id: failed_checks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr_number = ${{ steps.pr_info.outputs.pr_number }};
+            
+            // Get CodeRabbit review comments
+            const reviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr_number
+            });
+            
+            const coderabbitReview = reviews.data
+              .filter(r => r.user.login === 'coderabbitai[bot]')
+              .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))[0];
+            
+            let failedChecks = [];
+            if (coderabbitReview && coderabbitReview.body) {
+              // Parse failed checks from review body
+              const checkMatches = coderabbitReview.body.matchAll(/- \*\*([^*]+)\*\* \(([^)]+)\): (.+)/g);
+              for (const match of checkMatches) {
+                failedChecks.push({
+                  name: match[1],
+                  severity: match[2],
+                  message: match[3]
+                });
+              }
+            }
+            
+            core.setOutput('failed_checks_json', JSON.stringify(failedChecks));
+            core.setOutput('failed_checks_count', failedChecks.length);
+            
+            // Format for display
+            const failedChecksText = failedChecks.map(c => 
+              `• *${c.name}* (${c.severity}): ${c.message}`
+            ).join('\n') || 'See PR for details';
+            
+            core.setOutput('failed_checks_text', failedChecksText);
+
+      - name: Determine notification level
+        id: notification_level
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failedChecks = JSON.parse('${{ steps.failed_checks.outputs.failed_checks_json }}');
+            
+            // Check for critical/security failures
+            const hasCritical = failedChecks.some(c => 
+              c.severity === 'critical' || 
+              c.name.includes('security') ||
+              c.name.includes('credentials') ||
+              c.name.includes('injection')
+            );
+            
+            const level = hasCritical ? 'critical' : 'standard';
+            core.setOutput('level', level);
+            core.setOutput('emoji', hasCritical ? '🚨' : '⚠️');
+
+      - name: Post GitHub PR comment notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr_number = ${{ steps.pr_info.outputs.pr_number }};
+            const pr_author = '${{ steps.pr_info.outputs.pr_author }}';
+            const level = '${{ steps.notification_level.outputs.level }}';
+            const emoji = '${{ steps.notification_level.outputs.emoji }}';
+            const failedChecks = '${{ steps.failed_checks.outputs.failed_checks_text }}';
+            
+            const notificationBody = level === 'critical' ? `
+${emoji} **CRITICAL: Quality Gate Failure - Immediate Action Required**
+
+@${pr_author} - This PR has been blocked due to **critical security or breaking change violations**.
+
+### Failed Checks
+${failedChecks}
+
+### Required Actions
+
+1. **DO NOT MERGE** until critical issues are resolved
+2. Review each failed check and implement recommended fixes
+3. For security issues, consult [Security Standards](../knowledge-base/SECURITY_STANDARDS.md)
+4. Push fixes - checks will automatically re-run
+
+### Need Help?
+
+**For security issues:**
+- 🔒 Mention @kellerai/security-team for guidance
+- 📖 Review [Security Standards](../knowledge-base/SECURITY_STANDARDS.md)
+
+**For general quality gates:**
+- 📚 [Quality Gates Quick Reference](../docs/QUALITY_GATES_QUICK_REFERENCE.md)
+- 💬 Ask in #engineering Slack channel
+
+### Escalation
+
+If you need an override (must provide detailed justification):
+- For architectural exceptions: @kellerai/tech-leads
+- For security exceptions: @kellerai/security-team (elevated permissions required)
+
+---
+*Critical notification sent at ${new Date().toISOString()}*
+` : `
+${emoji} **Quality Gate Notification - Action Required**
+
+@${pr_author} - This PR has quality gate failures that need attention.
+
+### Failed Checks
+${failedChecks}
+
+### Next Steps
+
+1. Review failed checks above
+2. Fix issues according to guidance
+3. Push changes (automatic re-evaluation)
+4. Or request override with justification (see documentation)
+
+### Resources
+
+- 📖 [Quality Gates Quick Reference](../docs/QUALITY_GATES_QUICK_REFERENCE.md)
+- 📚 [Complete Quality Checks Guide](../docs/quality-checks-guide.md)
+- ❓ Questions? Ask in #engineering
+
+---
+*Notification sent at ${new Date().toISOString()}*
+`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr_number,
+              body: notificationBody
+            });
+
+      - name: Send Slack notification (if configured)
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "${{ steps.notification_level.outputs.emoji }} Quality Gate Failure",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.notification_level.outputs.emoji }} Quality Gate Failure - PR #${{ steps.pr_info.outputs.pr_number }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR:*\n<${{ steps.pr_info.outputs.pr_url }}|#${{ steps.pr_info.outputs.pr_number }} - ${{ steps.pr_info.outputs.pr_title }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n@${{ steps.pr_info.outputs.pr_author }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Severity:*\n${{ steps.notification_level.outputs.level }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Failed Checks:*\n${{ steps.failed_checks.outputs.failed_checks_count }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Failed Checks:*\n${{ steps.failed_checks.outputs.failed_checks_text }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View PR"
+                      },
+                      "url": "${{ steps.pr_info.outputs.pr_url }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Quality Gates Guide"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/blob/main/docs/QUALITY_GATES_QUICK_REFERENCE.md"
+                    }
+                  ]
+                }
+              ]
+            }
+
+  notify-escalation-needed:
+    name: Notify for Escalation
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '@kellerai/tech-leads') || 
+        contains(github.event.comment.body, '@kellerai/security-team') ||
+        contains(github.event.comment.body, '@kellerai/admins')
+    
+    steps:
+      - name: Determine escalation type
+        id: escalation_type
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.comment.body;
+            let type = 'standard';
+            let team = '';
+            
+            if (body.includes('@kellerai/security-team')) {
+              type = 'security';
+              team = 'security-team';
+            } else if (body.includes('@kellerai/admins')) {
+              type = 'emergency';
+              team = 'admins';
+            } else if (body.includes('@kellerai/tech-leads')) {
+              type = 'tech-lead';
+              team = 'tech-leads';
+            }
+            
+            core.setOutput('type', type);
+            core.setOutput('team', team);
+            core.setOutput('emoji', type === 'emergency' ? '🚨' : type === 'security' ? '🔒' : '🔔');
+
+      - name: Add escalation label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const type = '${{ steps.escalation_type.outputs.type }}';
+            const labels = {
+              'security': 'escalation:security-review',
+              'emergency': 'escalation:emergency',
+              'tech-lead': 'escalation:tech-lead-approval'
+            };
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: [labels[type], 'quality-gate-escalation']
+            });
+
+      - name: Send escalation notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "${{ steps.escalation_type.outputs.emoji }} Quality Gate Escalation Required",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.escalation_type.outputs.emoji }} Quality Gate Escalation: ${{ steps.escalation_type.outputs.type }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Team:* @${{ steps.escalation_type.outputs.team }}\n*Action Required:* Review and approve/reject override request"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR:* <${{ github.event.issue.html_url }}|#${{ github.event.issue.number }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Requested By:* @${{ github.event.comment.user.login }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Review Request"
+                      },
+                      "url": "${{ github.event.comment.html_url }}",
+                      "style": "primary"
+                    }
+                  ]
+                }
+              ]
+            }
+
+  track-metrics:
+    name: Track Quality Gate Metrics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_review' || github.event_name == 'check_run'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Record quality gate event
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Create metrics directory if it doesn't exist
+            const metricsDir = '.quality-gate-metrics';
+            if (!fs.existsSync(metricsDir)) {
+              fs.mkdirSync(metricsDir, { recursive: true });
+            }
+            
+            // Record event
+            const event = {
+              timestamp: new Date().toISOString(),
+              event_type: context.eventName,
+              pr_number: context.payload.pull_request?.number || context.payload.check_run?.pull_requests?.[0]?.number,
+              status: context.payload.review?.state || context.payload.check_run?.conclusion,
+              repository: context.repo.repo
+            };
+            
+            const today = new Date().toISOString().split('T')[0];
+            const metricsFile = path.join(metricsDir, `${today}.jsonl`);
+            
+            fs.appendFileSync(metricsFile, JSON.stringify(event) + '\n');
+            
+            console.log('Recorded quality gate event:', event);
+
+      - name: Upload metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-metrics-${{ github.run_id }}
+          path: .quality-gate-metrics/
+          retention-days: 90

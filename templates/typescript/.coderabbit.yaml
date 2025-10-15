@@ -1,0 +1,112 @@
+# CodeRabbit Configuration Template: TypeScript Projects
+# Inherits from: kellerai/coderabbit (organization baseline)
+#
+# This template extends the baseline configuration with TypeScript-specific settings
+# Apply this to TypeScript projects by copying to project root as .coderabbit.yaml
+
+# Override review focus for TypeScript projects
+reviews:
+  # Inherit base settings, override focus areas
+  focus:
+    - type_safety
+    - async_patterns
+    - error_handling
+    - performance
+    - security
+    - testing
+
+  # TypeScript-specific scope patterns
+  scope:
+    include:
+      - "src/**/*.ts"
+      - "lib/**/*.ts"
+      - "tests/**/*.ts"
+      - "**/*.d.ts"
+      - "tsconfig.json"
+      - "package.json"
+
+    exclude:
+      - "dist/**"
+      - "build/**"
+      - "coverage/**"
+      - "**/*.spec.ts"  # Test files reviewed differently
+      - "**/*.test.ts"
+      - "node_modules/**"
+
+# Language-specific settings
+languages:
+  typescript:
+    version: "5.0"
+
+    # TypeScript-specific review focus
+    focus:
+      - type_safety
+      - strict_mode_compliance
+      - async_patterns
+      - error_handling
+      - decorator_usage
+      - generics_usage
+
+    # TypeScript linting and formatting
+    tools:
+      - eslint
+      - prettier
+      - tsc
+
+    # Common TypeScript patterns to check
+    patterns:
+      # Prefer const/let over var
+      - id: prefer-const
+        pattern: "\\bvar\\s+"
+        message: "Use 'const' or 'let' instead of 'var'"
+        severity: warning
+
+      # Require explicit return types for functions
+      - id: explicit-return-types
+        message: "Functions should have explicit return types"
+        severity: info
+
+      # Avoid 'any' type
+      - id: avoid-any
+        pattern: ":\\s*any\\b"
+        message: "Avoid using 'any' type - use proper typing or 'unknown'"
+        severity: warning
+
+# Comments customization for TypeScript
+comments:
+  max_comments: 35  # Slightly more for type-related comments
+  style: detailed   # More detailed for type explanations
+
+  # TypeScript-specific comment priorities
+  priorities:
+    - type_safety: high
+    - async_patterns: high
+    - error_handling: high
+    - performance: medium
+    - style: low
+
+# Quality checks for TypeScript
+quality_checks:
+  # Require type definitions
+  type_coverage:
+    enabled: true
+    threshold: 0.90  # 90% type coverage
+
+  # TSDoc documentation coverage
+  tsdoc_coverage:
+    enabled: true
+    threshold: 0.80  # 80% of public APIs documented
+
+# Knowledge base - TypeScript specific files
+knowledge_base:
+  files:
+    - ".cursorrules"
+    - "CLAUDE.md"
+    - "tsconfig.json"
+    - "docs/typescript-standards.md"
+    - "docs/type-guidelines.md"
+
+# Performance settings for TypeScript projects
+performance:
+  # TypeScript projects can be larger
+  max_review_time: 360  # 6 minutes for larger TS projects

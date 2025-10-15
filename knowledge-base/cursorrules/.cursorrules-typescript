@@ -1,0 +1,983 @@
+# KellerAI TypeScript/JavaScript Development Standards
+# .cursorrules for TypeScript/JavaScript Projects
+# Version: 1.0
+# Last Updated: 2025-10-14
+
+## Project Context
+This ruleset applies to KellerAI TypeScript and JavaScript projects including frontend applications, backend APIs, and full-stack development with emphasis on type safety, performance, and maintainability.
+
+## TypeScript Configuration
+
+### Strict Type Checking
+Always use strict TypeScript configuration:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": false
+  }
+}
+```
+
+## Code Style and Formatting
+
+### Naming Conventions
+- **Files**: kebab-case for files (`user-service.ts`, `auth-utils.ts`)
+- **Components**: PascalCase for component files (`UserProfile.tsx`, `DataTable.tsx`)
+- **Interfaces**: PascalCase with descriptive names (`UserData`, `ApiResponse`)
+- **Types**: PascalCase (`RequestStatus`, `ErrorType`)
+- **Functions**: camelCase (`getUserData`, `processRequest`)
+- **Constants**: UPPER_SNAKE_CASE (`API_BASE_URL`, `MAX_RETRIES`)
+- **Enums**: PascalCase for enum, UPPER_SNAKE_CASE for values
+
+```typescript
+// File naming
+// ✅ user-service.ts, auth-middleware.ts, UserProfile.tsx
+// ❌ UserService.ts, auth_middleware.ts, user-profile.tsx
+
+// Interface naming
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Type naming
+type RequestStatus = 'pending' | 'success' | 'error';
+
+// Enum naming
+enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+}
+
+// Constant naming
+const MAX_RETRY_ATTEMPTS = 3;
+const API_BASE_URL = 'https://api.kellerai.com';
+```
+
+### Import Organization
+```typescript
+// 1. External dependencies (Node.js built-ins)
+import { readFile } from 'fs/promises';
+import path from 'path';
+
+// 2. External dependencies (third-party)
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { z } from 'zod';
+
+// 3. Internal modules (absolute imports)
+import { UserService } from '@/services/user-service';
+import { validateEmail } from '@/utils/validators';
+
+// 4. Internal modules (relative imports)
+import { UserProfile } from './types';
+import { formatDate } from '../utils/date';
+
+// 5. CSS/Style imports
+import styles from './UserProfile.module.css';
+import './global.css';
+```
+
+## Type Safety Best Practices
+
+### Avoid `any` Type
+```typescript
+// ❌ BAD - Using 'any'
+function processData(data: any): any {
+  return data.value;
+}
+
+// ✅ GOOD - Using proper types
+interface DataResponse {
+  value: string;
+  timestamp: number;
+}
+
+function processData(data: DataResponse): string {
+  return data.value;
+}
+
+// ✅ GOOD - Using 'unknown' when type is truly unknown
+function parseJson(jsonString: string): unknown {
+  return JSON.parse(jsonString);
+}
+
+// Then narrow the type
+const data: unknown = parseJson(jsonString);
+if (isUserData(data)) {
+  // TypeScript knows data is UserData here
+  console.log(data.email);
+}
+```
+
+### Type Guards and Narrowing
+```typescript
+// Type guard functions
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isUserData(data: unknown): data is UserData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'email' in data &&
+    typeof data.id === 'string' &&
+    typeof data.email === 'string'
+  );
+}
+
+// Usage
+function processValue(value: unknown): string {
+  if (isString(value)) {
+    return value.toUpperCase(); // TypeScript knows it's string
+  }
+  throw new Error('Value must be string');
+}
+```
+
+### Discriminated Unions
+```typescript
+// Define discriminated union for type-safe state management
+type ApiState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: UserData }
+  | { status: 'error'; error: Error };
+
+function handleApiState(state: ApiState): void {
+  switch (state.status) {
+    case 'idle':
+      console.log('Ready to fetch');
+      break;
+    case 'loading':
+      console.log('Fetching data...');
+      break;
+    case 'success':
+      // TypeScript knows state.data exists here
+      console.log('Data:', state.data);
+      break;
+    case 'error':
+      // TypeScript knows state.error exists here
+      console.error('Error:', state.error.message);
+      break;
+  }
+}
+```
+
+### Utility Types
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  role: 'admin' | 'user';
+}
+
+// Partial - make all properties optional
+type UpdateUserPayload = Partial<User>;
+
+// Pick - select specific properties
+type UserSummary = Pick<User, 'id' | 'name'>;
+
+// Omit - exclude specific properties
+type UserWithoutId = Omit<User, 'id'>;
+
+// Required - make all properties required
+type RequiredUser = Required<Partial<User>>;
+
+// Readonly - make all properties readonly
+type ImmutableUser = Readonly<User>;
+
+// Record - create object type with specific keys
+type UserRoles = Record<string, User[]>;
+
+// ReturnType - extract return type of function
+function getUser(): User {
+  return { id: '1', name: 'Alice', email: 'alice@example.com', age: 30, role: 'user' };
+}
+type UserType = ReturnType<typeof getUser>;
+
+// Parameters - extract parameter types of function
+function createUser(name: string, email: string): User {
+  // ...
+}
+type CreateUserParams = Parameters<typeof createUser>; // [string, string]
+```
+
+## Async Programming
+
+### Async/Await Best Practices
+```typescript
+// ✅ GOOD - Proper async error handling
+async function fetchUserData(userId: string): Promise<UserData> {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: unknown = await response.json();
+
+    if (!isUserData(data)) {
+      throw new Error('Invalid user data format');
+    }
+
+    return data;
+  } catch (error) {
+    logger.error('Failed to fetch user data:', error);
+    throw new UserFetchError(userId, error);
+  }
+}
+
+// ❌ BAD - No error handling
+async function fetchUserData(userId: string): Promise<UserData> {
+  const response = await fetch(`/api/users/${userId}`);
+  return response.json(); // No validation, no error handling
+}
+```
+
+### Promise Patterns
+```typescript
+// Parallel execution
+async function loadDashboardData(): Promise<DashboardData> {
+  const [users, metrics, alerts] = await Promise.all([
+    fetchUsers(),
+    fetchMetrics(),
+    fetchAlerts(),
+  ]);
+
+  return { users, metrics, alerts };
+}
+
+// Sequential with proper typing
+async function processDocuments(
+  documents: Document[]
+): Promise<ProcessedDocument[]> {
+  const results: ProcessedDocument[] = [];
+
+  for (const doc of documents) {
+    const processed = await processDocument(doc);
+    results.push(processed);
+  }
+
+  return results;
+}
+
+// Promise.allSettled for partial failures
+async function fetchMultipleUsers(
+  userIds: string[]
+): Promise<Array<UserData | Error>> {
+  const promises = userIds.map(id => fetchUserData(id));
+  const results = await Promise.allSettled(promises);
+
+  return results.map(result =>
+    result.status === 'fulfilled' ? result.value : result.reason
+  );
+}
+```
+
+### Cancellation and Cleanup
+```typescript
+// Using AbortController for cancellable requests
+async function fetchWithTimeout(
+  url: string,
+  timeoutMs: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    return response;
+  } catch (error) {
+    clearTimeout(timeout);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
+}
+```
+
+## Error Handling
+
+### Custom Error Classes
+```typescript
+// Base error class
+class KellerAIError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode: number = 500
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Specific error types
+class ValidationError extends KellerAIError {
+  constructor(message: string, public field?: string) {
+    super(message, 'VALIDATION_ERROR', 400);
+  }
+}
+
+class NotFoundError extends KellerAIError {
+  constructor(resource: string, id: string) {
+    super(`${resource} not found: ${id}`, 'NOT_FOUND', 404);
+  }
+}
+
+class UnauthorizedError extends KellerAIError {
+  constructor(message: string = 'Unauthorized') {
+    super(message, 'UNAUTHORIZED', 401);
+  }
+}
+
+// Usage
+function validateEmail(email: string): void {
+  if (!email.includes('@')) {
+    throw new ValidationError('Invalid email format', 'email');
+  }
+}
+
+async function getUser(userId: string): Promise<User> {
+  const user = await db.findUser(userId);
+  if (!user) {
+    throw new NotFoundError('User', userId);
+  }
+  return user;
+}
+```
+
+### Error Handling Utilities
+```typescript
+// Result type for functional error handling
+type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function safeAsync<T>(
+  promise: Promise<T>
+): Promise<Result<T>> {
+  try {
+    const data = await promise;
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
+  }
+}
+
+// Usage
+const result = await safeAsync(fetchUserData('123'));
+if (result.success) {
+  console.log(result.data.name);
+} else {
+  console.error(result.error.message);
+}
+```
+
+## Documentation Standards
+
+### JSDoc Comments
+```typescript
+/**
+ * Processes a document and extracts structured data.
+ *
+ * This function takes a document file, validates its format, extracts
+ * text content, and applies ML models to extract structured information.
+ *
+ * @param documentPath - Path to the document file to process
+ * @param options - Optional processing configuration
+ * @param options.useOcr - Whether to use OCR for scanned documents
+ * @param options.modelVersion - Version of the ML model to use
+ * @returns Promise resolving to processed document data
+ * @throws {ValidationError} If document format is invalid
+ * @throws {ProcessingError} If document processing fails
+ *
+ * @example
+ * ```typescript
+ * const result = await processDocument('/path/to/doc.pdf', {
+ *   useOcr: true,
+ *   modelVersion: 'v2.1'
+ * });
+ * console.log(result.extractedData);
+ * ```
+ */
+async function processDocument(
+  documentPath: string,
+  options: ProcessingOptions = {}
+): Promise<ProcessedDocument> {
+  // Implementation
+}
+```
+
+### Interface and Type Documentation
+```typescript
+/**
+ * Represents a user in the system.
+ */
+interface User {
+  /** Unique identifier for the user */
+  id: string;
+
+  /** User's full name */
+  name: string;
+
+  /** User's email address (must be unique) */
+  email: string;
+
+  /** User's age in years */
+  age: number;
+
+  /** User's role in the system */
+  role: 'admin' | 'user' | 'guest';
+
+  /** Timestamp when user account was created */
+  createdAt: Date;
+
+  /** Optional profile picture URL */
+  avatarUrl?: string;
+}
+
+/**
+ * Configuration options for document processing.
+ */
+type ProcessingOptions = {
+  /** Enable OCR for scanned documents (default: false) */
+  useOcr?: boolean;
+
+  /** ML model version to use (default: latest) */
+  modelVersion?: string;
+
+  /** Maximum processing time in milliseconds */
+  timeoutMs?: number;
+
+  /** Language for text extraction (default: 'en') */
+  language?: 'en' | 'es' | 'fr' | 'de';
+};
+```
+
+## Testing Standards
+
+### Unit Testing with Jest/Vitest
+```typescript
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { Mock } from 'vitest';
+import { UserService } from './user-service';
+import { NotFoundError } from './errors';
+
+// Type-safe database interface
+interface UserDatabase {
+  findUser: (userId: string) => Promise<User | null>;
+  createUser: (userData: CreateUserInput) => Promise<User>;
+}
+
+describe('UserService', () => {
+  let userService: UserService;
+  let mockDb: {
+    findUser: Mock<[string], Promise<User | null>>;
+    createUser: Mock<[CreateUserInput], Promise<User>>;
+  };
+
+  beforeEach(() => {
+    mockDb = {
+      findUser: vi.fn<[string], Promise<User | null>>(),
+      createUser: vi.fn<[CreateUserInput], Promise<User>>(),
+    };
+    userService = new UserService(mockDb as UserDatabase);
+  });
+
+  describe('getUser', () => {
+    it('should return user when found', async () => {
+      // Arrange
+      const userId = '123';
+      const mockUser = {
+        id: userId,
+        name: 'Alice',
+        email: 'alice@example.com',
+      };
+      mockDb.findUser.mockResolvedValue(mockUser);
+
+      // Act
+      const result = await userService.getUser(userId);
+
+      // Assert
+      expect(result).toEqual(mockUser);
+      expect(mockDb.findUser).toHaveBeenCalledWith(userId);
+      expect(mockDb.findUser).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw NotFoundError when user not found', async () => {
+      // Arrange
+      const userId = '999';
+      mockDb.findUser.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(userService.getUser(userId)).rejects.toThrow(NotFoundError);
+      await expect(userService.getUser(userId)).rejects.toThrow('User not found: 999');
+    });
+  });
+
+  describe('createUser', () => {
+    it('should create user with valid data', async () => {
+      // Arrange
+      const userData = {
+        name: 'Bob',
+        email: 'bob@example.com',
+        age: 30,
+      };
+      const createdUser = { id: '456', ...userData };
+      mockDb.createUser.mockResolvedValue(createdUser);
+
+      // Act
+      const result = await userService.createUser(userData);
+
+      // Assert
+      expect(result).toEqual(createdUser);
+      expect(result.id).toBeDefined();
+    });
+
+    it('should validate email format', async () => {
+      // Arrange
+      const userData = {
+        name: 'Charlie',
+        email: 'invalid-email',
+        age: 25,
+      };
+
+      // Act & Assert
+      await expect(userService.createUser(userData)).rejects.toThrow(ValidationError);
+    });
+  });
+});
+```
+
+### Test Utilities and Helpers
+```typescript
+// Test data factories
+export function createMockUser(overrides: Partial<User> = {}): User {
+  return {
+    id: '1',
+    name: 'Test User',
+    email: 'test@example.com',
+    age: 30,
+    role: 'user',
+    createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+// Custom matchers
+expect.extend({
+  toBeValidEmail(received: string) {
+    const pass = /^[\w\.-]+@[\w\.-]+\.\w+$/.test(received);
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `Expected ${received} not to be a valid email`
+          : `Expected ${received} to be a valid email`,
+    };
+  },
+});
+
+// Usage
+expect('user@example.com').toBeValidEmail();
+```
+
+## Performance Optimization
+
+### Memoization and Caching
+```typescript
+// Simple memoization
+function memoize<T extends (...args: any[]) => any>(fn: T): T {
+  const cache = new Map<string, ReturnType<T>>();
+
+  return ((...args: Parameters<T>): ReturnType<T> => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  }) as T;
+}
+
+// Usage
+const expensiveOperation = memoize((n: number): number => {
+  console.log('Computing...');
+  return n * n;
+});
+
+expensiveOperation(5); // Computing... 25
+expensiveOperation(5); // 25 (from cache)
+```
+
+### Debounce and Throttle
+```typescript
+// Debounce - delay execution until after wait period
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  waitMs: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | undefined;
+
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), waitMs);
+  };
+}
+
+// Throttle - limit execution frequency
+function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limitMs: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean = false;
+
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limitMs);
+    }
+  };
+}
+
+// Usage
+const debouncedSearch = debounce((query: string) => {
+  console.log('Searching for:', query);
+}, 300);
+
+const throttledScroll = throttle(() => {
+  console.log('Scroll position:', window.scrollY);
+}, 100);
+```
+
+### Bundle Optimization
+```typescript
+// Dynamic imports for code splitting
+async function loadHeavyFeature(): Promise<void> {
+  const { HeavyComponent } = await import('./heavy-component');
+  // Use HeavyComponent
+}
+
+// Lazy loading with React
+import { lazy, Suspense } from 'react';
+
+const LazyComponent = lazy(() => import('./LazyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LazyComponent />
+    </Suspense>
+  );
+}
+```
+
+## Security Best Practices
+
+### Input Validation with Zod
+```typescript
+import { z } from 'zod';
+
+// Define validation schema
+const UserSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  age: z.number().int().min(18).max(120),
+  role: z.enum(['admin', 'user', 'guest']),
+  password: z.string().min(8).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+});
+
+type UserInput = z.infer<typeof UserSchema>;
+
+// Validate input
+function createUser(input: unknown): UserInput {
+  return UserSchema.parse(input); // Throws if invalid
+}
+
+// Safe validation
+function safeCreateUser(input: unknown): Result<UserInput> {
+  const result = UserSchema.safeParse(input);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, error: new ValidationError(result.error.message) };
+}
+```
+
+### XSS Prevention
+```typescript
+// ❌ BAD - Vulnerable to XSS
+function unsafeRender(userInput: string): string {
+  return `<div>${userInput}</div>`; // If userInput contains <script>...
+}
+
+// ✅ GOOD - Use framework's built-in escaping
+import DOMPurify from 'dompurify';
+
+function safeRender(userInput: string): string {
+  const sanitized = DOMPurify.sanitize(userInput);
+  return sanitized;
+}
+
+// In React, JSX automatically escapes
+function Component({ userInput }: { userInput: string }) {
+  return <div>{userInput}</div>; // Automatically escaped
+}
+```
+
+### API Security
+```typescript
+// Rate limiting middleware
+import rateLimit from 'express-rate-limit';
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+
+app.use('/api/', apiLimiter);
+
+// JWT authentication
+import jwt from 'jsonwebtoken';
+
+function generateToken(userId: string): string {
+  return jwt.sign({ userId }, process.env.JWT_SECRET!, {
+    expiresIn: '1h',
+  });
+}
+
+function verifyToken(token: string): { userId: string } {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    if (typeof decoded === 'object' && 'userId' in decoded) {
+      return decoded as { userId: string };
+    }
+    throw new UnauthorizedError('Invalid token format');
+  } catch (error) {
+    throw new UnauthorizedError('Invalid or expired token');
+  }
+}
+```
+
+## Code Organization
+
+### Module Structure
+```typescript
+// user-service.ts
+import { User, CreateUserInput, UpdateUserInput } from './types';
+import { database } from './database';
+import { logger } from './logger';
+import { ValidationError, NotFoundError } from './errors';
+
+/**
+ * Service for managing user operations.
+ */
+export class UserService {
+  constructor(private db: typeof database) {}
+
+  async getUser(userId: string): Promise<User> {
+    const user = await this.db.findUser(userId);
+    if (!user) {
+      throw new NotFoundError('User', userId);
+    }
+    return user;
+  }
+
+  async createUser(input: CreateUserInput): Promise<User> {
+    this.validateCreateInput(input);
+    return await this.db.createUser(input);
+  }
+
+  async updateUser(userId: string, input: UpdateUserInput): Promise<User> {
+    await this.getUser(userId); // Verify exists
+    this.validateUpdateInput(input);
+    return await this.db.updateUser(userId, input);
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await this.getUser(userId); // Verify exists
+    await this.db.deleteUser(userId);
+    logger.info(`User deleted: ${userId}`);
+  }
+
+  private validateCreateInput(input: CreateUserInput): void {
+    if (!input.email.includes('@')) {
+      throw new ValidationError('Invalid email format', 'email');
+    }
+    if (input.age < 18) {
+      throw new ValidationError('User must be at least 18 years old', 'age');
+    }
+  }
+
+  private validateUpdateInput(input: UpdateUserInput): void {
+    if (input.email && !input.email.includes('@')) {
+      throw new ValidationError('Invalid email format', 'email');
+    }
+  }
+}
+```
+
+### Barrel Exports
+```typescript
+// index.ts - Barrel file
+export { UserService } from './user-service';
+export { AuthService } from './auth-service';
+export { DocumentService } from './document-service';
+
+export type { User, CreateUserInput, UpdateUserInput } from './types';
+export { ValidationError, NotFoundError, UnauthorizedError } from './errors';
+```
+
+## Code Review Checklist
+
+Before submitting code for review, verify:
+
+- [ ] TypeScript strict mode enabled
+- [ ] No `any` types (use `unknown` if necessary)
+- [ ] All functions have explicit return types
+- [ ] Proper error handling for async operations
+- [ ] Input validation for external data
+- [ ] JSDoc comments for public APIs
+- [ ] Tests written with >80% coverage
+- [ ] No security vulnerabilities (XSS, injection)
+- [ ] Efficient algorithms and data structures
+- [ ] No hardcoded secrets or API keys
+- [ ] Proper resource cleanup (listeners, timers)
+- [ ] Type guards for unknown types
+- [ ] Discriminated unions for complex state
+- [ ] Proper logging for debugging
+
+## Common Anti-Patterns to Avoid
+
+### 1. Type Assertion Instead of Type Guards
+```typescript
+// ❌ BAD - Unsafe type assertion
+const data = response.json() as UserData;
+
+// ✅ GOOD - Type guard with validation
+const data = response.json();
+if (!isUserData(data)) {
+  throw new Error('Invalid data format');
+}
+```
+
+### 2. Missing Error Handling in Async Functions
+```typescript
+// ❌ BAD - Unhandled promise rejection
+async function fetchData() {
+  const response = await fetch('/api/data');
+  return response.json();
+}
+
+// ✅ GOOD - Proper error handling
+async function fetchData() {
+  try {
+    const response = await fetch('/api/data');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    logger.error('Failed to fetch data:', error);
+    throw new ApiError('Data fetch failed', error);
+  }
+}
+```
+
+### 3. Mutating Function Arguments
+```typescript
+// ❌ BAD - Mutating input
+function addItem(array: string[], item: string): string[] {
+  array.push(item); // Mutates input
+  return array;
+}
+
+// ✅ GOOD - Return new array
+function addItem(array: string[], item: string): string[] {
+  return [...array, item];
+}
+```
+
+### 4. Not Cleaning Up Side Effects
+```typescript
+// ❌ BAD - Memory leak
+function setupListener() {
+  window.addEventListener('resize', handleResize);
+  // No cleanup
+}
+
+// ✅ GOOD - Cleanup function
+function setupListener(): () => void {
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}
+```
+
+## Tools and Automation
+
+### Required Development Tools
+- **TypeScript**: Type checking (`tsc --noEmit`)
+- **ESLint**: Linting (`eslint .`)
+- **Prettier**: Code formatting (`prettier --write .`)
+- **Vitest/Jest**: Testing (`vitest` or `jest`)
+- **Biome**: Alternative fast linter/formatter
+
+### ESLint Configuration Example
+```json
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/explicit-function-return-type": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  }
+}
+```
+
+---
+
+**Last Updated**: 2025-10-14
+**Maintainer**: KellerAI Engineering Team
+**Questions**: Contact the platform team for clarifications
