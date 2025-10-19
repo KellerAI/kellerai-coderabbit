@@ -146,6 +146,8 @@ Start with the [Integration Overview](docs/architecture/integration-overview.md)
 
 See [REPOSITORY_SETUP.md](REPOSITORY_SETUP.md) for detailed setup instructions.
 
+**Project Structure:** See [STRUCTURE.md](STRUCTURE.md) for complete directory organization and recommended src/ layout migration guide.
+
 ## Key Features
 
 ### 🤖 AI-Powered Code Review
