@@ -1,0 +1,141 @@
+# KellerAI CodeRabbit Integration - Docker Compose
+# Local development and testing environment
+
+services:
+  # Main application service
+  coderabbit-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development
+    image: kellerai/coderabbit-integration:dev
+    container_name: coderabbit-dev
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KELLERAI_REPO_ROOT=/app
+      # Add your API keys from .env
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY:-}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    volumes:
+      # Mount source code for live development
+      - ./quality_checks:/app/quality_checks:ro
+      - ./mcp_servers:/app/mcp_servers:ro
+      - ./docs:/app/docs:ro
+      - ./templates:/app/templates:ro
+      - ./.coderabbit.yaml:/app/.coderabbit.yaml:ro
+      # Mount test results
+      - ./htmlcov:/app/htmlcov
+      - ./.coverage:/app/.coverage
+    working_dir: /app
+    command: ["python", "-m", "pytest", "quality-checks/tests/", "-v"]
+    networks:
+      - coderabbit-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import quality_checks; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # MCP server for KellerAI standards
+  mcp-standards:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kellerai/coderabbit-integration:dev
+    container_name: mcp-standards
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KELLERAI_REPO_ROOT=/app
+    volumes:
+      - ./mcp_servers/kellerai-standards:/app/mcp_servers/kellerai-standards:ro
+      - ./docs:/app/docs:ro
+    working_dir: /app
+    command: ["python", "mcp_servers/kellerai-standards/src/server.py"]
+    networks:
+      - coderabbit-net
+    depends_on:
+      - coderabbit-integration
+
+  # Testing service - runs all quality checks
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: kellerai/coderabbit-integration:test
+    container_name: coderabbit-test
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTEST_ADDOPTS=--color=yes
+    volumes:
+      - ./quality-checks:/app/quality-checks
+      - ./htmlcov:/app/htmlcov
+    working_dir: /app
+    command: >
+      sh -c "
+        python -m pytest quality-checks/tests/ -v --tb=short \
+        --cov=quality_checks --cov-report=term-missing \
+        --cov-report=html --cov-report=xml \
+        && echo 'All tests passed!'
+      "
+    networks:
+      - coderabbit-net
+    profiles:
+      - test
+
+  # Linting service
+  linter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: kellerai/coderabbit-integration:lint
+    container_name: coderabbit-lint
+    volumes:
+      - ./quality_checks:/app/quality_checks
+      - ./mcp_servers:/app/mcp_servers
+    working_dir: /app
+    command: >
+      sh -c "
+        python -m ruff check quality_checks mcp_servers --fix \
+        && python -m ruff format quality_checks mcp_servers \
+        && echo 'Linting complete!'
+      "
+    networks:
+      - coderabbit-net
+    profiles:
+      - lint
+
+  # Type checking service
+  type-checker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: kellerai/coderabbit-integration:mypy
+    container_name: coderabbit-mypy
+    volumes:
+      - ./quality_checks:/app/quality_checks
+      - ./mcp_servers:/app/mcp_servers
+    working_dir: /app
+    command: >
+      sh -c "
+        python -m mypy quality_checks mcp_servers \
+        && echo 'Type checking complete!'
+      "
+    networks:
+      - coderabbit-net
+    profiles:
+      - typecheck
+
+networks:
+  coderabbit-net:
+    driver: bridge
+
+volumes:
+  test-results:
+    driver: local

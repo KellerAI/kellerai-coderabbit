@@ -1,0 +1,107 @@
+# KellerAI CodeRabbit Integration - Docker Ignore
+# Files and directories to exclude from Docker builds
+
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Linting
+.ruff_cache/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files (use secrets management instead)
+.env
+.env.local
+.env.*.local
+
+# Task management and AI assistants
+.taskmaster/
+.serena/
+.claude/
+
+# Documentation source (include built docs only)
+docs/
+*.md
+!README.md
+
+# Scripts and bins (not needed in production container)
+bin/
+scripts/
+
+# Development dependencies
+requirements-dev.txt
+
+# Templates (not needed in production)
+templates/
+
+# Knowledge base (not needed in runtime)
+knowledge-base/
+
+# GitHub workflows
+.github/
+
+# Build tools
+Makefile
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+tmp/
+temp/
+
+# OS specific
+Thumbs.db
