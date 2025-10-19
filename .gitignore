@@ -194,9 +194,14 @@ compliance-reports/
 # Temporary files
 tmp/
 temp/
+.tmp/
 *.tmp
 *.bak
 *.swp
+
+# Development artifacts (keep root clean)
+*.egg-info/
+kellerai_coderabbit_integration.egg-info/
 
 # Build artifacts
 *.pyc
