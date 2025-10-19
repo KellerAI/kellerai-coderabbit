@@ -1,0 +1,67 @@
+# KellerAI CodeRabbit Integration - Package Manifest
+# Specifies additional files to include in source distributions
+
+# Include essential documentation
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+include REPOSITORY_SETUP.md
+include PROJECT_STATUS.md
+
+# Include configuration files
+include .coderabbit.yaml
+include .env.example
+include pyproject.toml
+
+include Makefile
+
+# Include templates
+recursive-include templates *.yaml *.yml
+
+# Include quality checks and tests
+recursive-include quality-checks *.py
+recursive-include quality-checks/tests *.py
+
+# Include MCP server code
+recursive-include mcp-servers *.py *.txt *.md
+include mcp-servers/kellerai-standards/requirements.txt
+
+# Include scripts
+recursive-include bin *.sh
+recursive-include scripts *.sh *.py
+
+# Include documentation
+recursive-include docs *.md *.yaml *.yml *.txt
+
+# Exclude development and build artifacts
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .git*
+global-exclude .coverage
+global-exclude htmlcov
+
+# Exclude IDE and editor files
+global-exclude .vscode
+global-exclude .idea
+global-exclude *.swp
+global-exclude *.swo
+global-exclude *~
+
+# Exclude task management and memory files
+recursive-exclude .taskmaster *
+recursive-exclude .serena *
+recursive-exclude .claude *
+
+# Exclude build directories
+prune build
+prune dist
+prune *.egg-info
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune .tmp
+prune htmlcov
