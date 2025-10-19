@@ -14,7 +14,6 @@ import re
 import ast
 from typing import List, Dict, Set, Optional
 from dataclasses import dataclass
-from pathlib import Path
 
 
 @dataclass

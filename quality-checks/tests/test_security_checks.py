@@ -4,7 +4,6 @@ Tests for security quality checks.
 Task 11.2: Security Validation Custom Check - Testing
 """
 
-import pytest
 from quality_checks.security_checks import (
     HardcodedCredentialsCheck,
     SQLInjectionCheck,

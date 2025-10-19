@@ -34,7 +34,7 @@ def authenticate(username: str, email: str) -> Token:
 """
         check = APISignatureChangeCheck()
         findings = check.check("api/auth.py", old_code, new_code)
-        
+
         assert len(findings) > 0
         assert any("parameter" in f.message.lower() for f in findings)
         assert findings[0].requires_changelog
@@ -51,7 +51,7 @@ def authenticate(username: str, remember_me: bool = False) -> Token:
 """
         check = APISignatureChangeCheck()
         findings = check.check("api/auth.py", old_code, new_code)
-        
+
         # Should pass - optional parameter
         breaking_findings = [f for f in findings if f.severity == "high"]
         assert len(breaking_findings) == 0
@@ -68,7 +68,7 @@ def get_user(user_id: int) -> Optional[User]:
 """
         check = APISignatureChangeCheck()
         findings = check.check("api/users.py", old_code, new_code)
-        
+
         assert len(findings) > 0
         assert any("return" in f.message.lower() for f in findings)
 
@@ -84,7 +84,7 @@ def create_order(customer_id: int, total: float) -> Order:
 """
         check = APISignatureChangeCheck()
         findings = check.check("api/orders.py", old_code, new_code)
-        
+
         assert len(findings) > 0
         assert findings[0].change_type in ["signature_change", "parameter_change"]
 
@@ -101,7 +101,7 @@ def get_user(user_id: int) -> User:
 """
         check = APISignatureChangeCheck()
         findings = check.check("api/users.py", old_code, new_code)
-        
+
         # Should pass - no signature change
         assert len(findings) == 0
 
@@ -126,7 +126,7 @@ def get_user(user_id: int) -> User:
 """
         check = RemovedPublicMethodsCheck()
         findings = check.check("api/users.py", old_code, new_code)
-        
+
         assert len(findings) > 0
         assert any("delete_user" in f.element_name for f in findings)
         assert findings[0].severity == "critical"
@@ -148,7 +148,7 @@ class User:
 """
         check = RemovedPublicMethodsCheck()
         findings = check.check("models/entities.py", old_code, new_code)
-        
+
         assert len(findings) > 0
         assert any("Order" in f.element_name for f in findings)
 
@@ -169,7 +169,7 @@ def get_user(user_id: int) -> User:
 """
         check = RemovedPublicMethodsCheck()
         findings = check.check("services/user_service.py", old_code, new_code)
-        
+
         # Should pass - private method
         assert len(findings) == 0
 
@@ -185,7 +185,7 @@ def login(username: str) -> Token:
 """
         check = RemovedPublicMethodsCheck()
         findings = check.check("api/auth.py", old_code, new_code)
-        
+
         # Should detect authenticate removal
         assert len(findings) > 0
         assert any("authenticate" in f.element_name for f in findings)
@@ -212,10 +212,10 @@ class TestChangelogRequirementCheck:
                 suggested_changelog_entry="Changed get_user signature"
             )
         ]
-        
+
         check = ChangelogRequirementCheck()
         findings = check.check(changed_files, breaking_changes)
-        
+
         assert len(findings) > 0
         assert any("CHANGELOG" in f.message for f in findings)
 
@@ -243,10 +243,10 @@ class TestChangelogRequirementCheck:
                 suggested_changelog_entry="Changed get_user signature"
             )
         ]
-        
+
         check = ChangelogRequirementCheck()
         findings = check.check(changed_files, breaking_changes)
-        
+
         # Should pass - CHANGELOG updated
         assert len(findings) == 0
 
@@ -256,10 +256,10 @@ class TestChangelogRequirementCheck:
             "services/user_service.py": "internal refactoring"
         }
         breaking_changes = []
-        
+
         check = ChangelogRequirementCheck()
         findings = check.check(changed_files, breaking_changes)
-        
+
         # Should pass - no breaking changes
         assert len(findings) == 0
 
@@ -285,10 +285,10 @@ No proper format
                 suggested_changelog_entry="API change"
             )
         ]
-        
+
         check = ChangelogRequirementCheck()
         findings = check.check(changed_files, breaking_changes)
-        
+
         # Should fail - improper format
         assert len(findings) > 0
 
@@ -304,7 +304,7 @@ def downgrade():
 """
         check = DatabaseSchemaChangeCheck()
         findings = check.check("migrations/remove_column.py", code)
-        
+
         assert len(findings) > 0
         assert any("column" in f.message.lower() for f in findings)
         assert findings[0].requires_changelog
@@ -317,7 +317,7 @@ def upgrade():
 """
         check = DatabaseSchemaChangeCheck()
         findings = check.check("migrations/add_required_field.py", code)
-        
+
         assert len(findings) > 0
         assert any("nullable" in f.message.lower() or "default" in f.message.lower() for f in findings)
 
@@ -329,7 +329,7 @@ def upgrade():
 """
         check = DatabaseSchemaChangeCheck()
         findings = check.check("migrations/add_optional_field.py", code)
-        
+
         # Should pass - nullable column
         breaking_findings = [f for f in findings if f.severity == "critical"]
         assert len(breaking_findings) == 0
@@ -342,7 +342,7 @@ def downgrade():
 """
         check = DatabaseSchemaChangeCheck()
         findings = check.check("migrations/drop_table.py", code)
-        
+
         assert len(findings) > 0
         assert any("table" in f.message.lower() for f in findings)
         assert findings[0].severity == "critical"
@@ -368,10 +368,10 @@ def get_user(user_id: int) -> User:
     pass
 """
         }
-        
+
         validator = BreakingChangesValidator()
         findings = validator.validate_pr(changed_files, old_files)
-        
+
         # Should have findings from multiple checks
         assert len(findings) > 0
 
@@ -389,10 +389,10 @@ def authenticate(username: str) -> Token:
     pass
 """
         }
-        
+
         validator = BreakingChangesValidator()
         findings = validator.validate_pr(changed_files, old_files)
-        
+
         # Should require CHANGELOG
         assert any(f.requires_changelog for f in findings)
 
@@ -411,10 +411,10 @@ def authenticate(username: str) -> Token:
                 suggested_changelog_entry="Changed get_user to require email parameter"
             )
         ]
-        
+
         validator = BreakingChangesValidator()
         report = validator.format_findings_report(findings)
-        
+
         assert "CHANGELOG" in report
         assert "get_user" in report
         assert "email parameter" in report

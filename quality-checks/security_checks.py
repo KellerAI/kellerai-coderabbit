@@ -12,7 +12,7 @@ Task 11.2: Security Validation Custom Check
 """
 
 import re
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -354,9 +354,9 @@ class SecurityValidator:
             for finding in sorted(file_findings, key=lambda f: f.severity.value):
                 emoji = "🔴" if finding.severity == Severity.CRITICAL else "🟡"
                 report.append(f"{emoji} **Line {finding.line_number}**: {finding.message}")
-                report.append(f"   ```")
+                report.append("   ```")
                 report.append(f"   {finding.line_content}")
-                report.append(f"   ```")
+                report.append("   ```")
                 report.append(f"   💡 **Fix**: {finding.suggested_fix}\n")
 
         return "\n".join(report)

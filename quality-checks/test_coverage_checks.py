@@ -12,7 +12,7 @@ Task 11.3: Architecture and Test Coverage Checks
 
 import re
 import ast
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from pathlib import Path
 

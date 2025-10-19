@@ -30,10 +30,10 @@ def process_payment(amount: float) -> bool:
 """
         }
         test_files = {}
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         assert len(findings) > 0
         assert any("process_payment" in f.function_name for f in findings)
         assert any("test" in f.message.lower() for f in findings)
@@ -56,10 +56,10 @@ def test_process_payment_zero_amount_fails():
     assert process_payment(0) == False
 """
         }
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         # Should pass - test exists
         assert len(findings) == 0
 
@@ -72,10 +72,10 @@ def _internal_calculation(amount: float) -> float:
 """
         }
         test_files = {}
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         # Should skip private functions
         assert len(findings) == 0
 
@@ -88,10 +88,10 @@ def test_something():
 """
         }
         test_files = {}
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         # Should skip test files
         assert len(findings) == 0
 
@@ -104,10 +104,10 @@ def helper_function():
 """
         }
         test_files = {}
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         # Should skip __init__ files
         assert len(findings) == 0
 
@@ -134,10 +134,10 @@ def test_multiply():
     assert multiply(2, 3) == 6
 """
         }
-        
+
         check = NewFunctionsHaveTestsCheck()
         findings = check.check(changed_files, test_files)
-        
+
         # Should find subtract missing test
         assert len(findings) == 1
         assert findings[0].function_name == "subtract"
@@ -153,10 +153,10 @@ class TestBugFixRegressionTestCheck:
         changed_files = {
             "src/cache.py": "# Fixed code"
         }
-        
+
         check = BugFixRegressionTestCheck()
         findings = check.check(pr_title, pr_description, changed_files)
-        
+
         assert len(findings) > 0
         assert any("regression" in f.message.lower() for f in findings)
 
@@ -172,10 +172,10 @@ def test_cache_clears_properly():
     pass
 """
         }
-        
+
         check = BugFixRegressionTestCheck()
         findings = check.check(pr_title, pr_description, changed_files)
-        
+
         # Should pass - test file included
         assert len(findings) == 0
 
@@ -186,10 +186,10 @@ def test_cache_clears_properly():
         changed_files = {
             "src/payment.py": "# New code"
         }
-        
+
         check = BugFixRegressionTestCheck()
         findings = check.check(pr_title, pr_description, changed_files)
-        
+
         # Should pass - not a bug fix
         assert len(findings) == 0
 
@@ -200,10 +200,10 @@ def test_cache_clears_properly():
         changed_files = {
             "src/payment.py": "# Fixed code"
         }
-        
+
         check = BugFixRegressionTestCheck()
         findings = check.check(pr_title, pr_description, changed_files)
-        
+
         assert len(findings) > 0
 
     def test_modified_test_file_counts(self):
@@ -214,10 +214,10 @@ def test_cache_clears_properly():
             "src/validator.py": "# Fixed code",
             "tests/test_validator.py": "# Added regression test"
         }
-        
+
         check = BugFixRegressionTestCheck()
         findings = check.check(pr_title, pr_description, changed_files)
-        
+
         # Should pass - test file modified
         assert len(findings) == 0
 
@@ -234,10 +234,10 @@ def test_create_user():
     # No assertion!
 """
         }
-        
+
         check = TestQualityCheck()
         findings = check.check(test_files)
-        
+
         assert len(findings) > 0
         assert any("assertion" in f.message.lower() for f in findings)
 
@@ -251,10 +251,10 @@ def test_create_user():
     assert user.is_active == True
 """
         }
-        
+
         check = TestQualityCheck()
         findings = check.check(test_files)
-        
+
         # Should pass - has assertions
         assert len(findings) == 0
 
@@ -267,10 +267,10 @@ def test_invalid_input_raises_error():
         validate_input("")
 """
         }
-        
+
         check = TestQualityCheck()
         findings = check.check(test_files)
-        
+
         # Should pass - pytest.raises is valid
         assert len(findings) == 0
 
@@ -280,10 +280,10 @@ def test_invalid_input_raises_error():
             "tests/__init__.py": "",
             "tests/conftest.py": "import pytest"
         }
-        
+
         check = TestQualityCheck()
         findings = check.check(test_files)
-        
+
         # Should not flag special files
         assert len(findings) == 0
 
@@ -302,10 +302,10 @@ def process_payment(amount):
 """,
             # No test file!
         }
-        
+
         validator = TestCoverageValidator()
         findings = validator.validate_pr(pr_title, pr_description, changed_files)
-        
+
         # Should have findings from multiple checks
         assert len(findings) > 0
 
@@ -326,10 +326,10 @@ def test_validate_email_invalid():
     assert validate_email("invalid") == False
 """
         }
-        
+
         validator = TestCoverageValidator()
         findings = validator.validate_pr(pr_title, pr_description, changed_files)
-        
+
         # Should pass - complete coverage
         assert len(findings) == 0
 
@@ -346,10 +346,10 @@ def test_validate_email_invalid():
                 suggested_fix="Create tests/test_payment.py with test_process_payment"
             )
         ]
-        
+
         validator = TestCoverageValidator()
         report = validator.format_findings_report(findings)
-        
+
         assert "process_payment" in report
         assert "src/payment.py" in report
         assert "test_payment.py" in report

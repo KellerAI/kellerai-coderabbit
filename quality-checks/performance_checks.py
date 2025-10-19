@@ -12,8 +12,7 @@ Task 11.4: Performance and Breaking Changes Checks
 """
 
 import re
-import ast
-from typing import List, Dict, Optional, Set
+from typing import List, Dict
 from dataclasses import dataclass
 
 
@@ -405,9 +404,9 @@ class PerformanceValidator:
             for finding in sorted(file_findings, key=lambda f: f.line_number):
                 emoji = "🔴" if finding.severity == "high" else "🟡" if finding.severity == "medium" else "ℹ️"
                 report.append(f"{emoji} **Line {finding.line_number}**: {finding.message}")
-                report.append(f"   ```python")
+                report.append("   ```python")
                 report.append(f"   {finding.line_content}")
-                report.append(f"   ```")
+                report.append("   ```")
                 report.append(f"   📊 **Impact**: {finding.impact}")
                 if finding.suggested_fix:
                     report.append(f"   💡 **Fix**: {finding.suggested_fix}")

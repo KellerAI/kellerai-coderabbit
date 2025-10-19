@@ -13,7 +13,7 @@ Task 11.4: Breaking Changes and Performance Checks
 
 import re
 import ast
-from typing import List, Dict, Set, Optional, Tuple
+from typing import List, Dict, Set, Optional
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -459,9 +459,9 @@ class BreakingChangesValidator:
                 report.append(f"   {finding.message}")
 
                 if finding.suggested_changelog_entry:
-                    report.append(f"   ```markdown")
+                    report.append("   ```markdown")
                     report.append(f"   {finding.suggested_changelog_entry}")
-                    report.append(f"   ```")
+                    report.append("   ```")
                 report.append("")
 
         return "\n".join(report)

@@ -15,7 +15,6 @@ from quality_checks.architecture_checks import (
     DependencyInjectionCheck,
     AsyncPatternsCheck,
     CircularDependencyCheck,
-    ArchitectureFinding,
 )
 
 
@@ -33,7 +32,7 @@ class UserRepository:
 """
         check = LayerSeparationCheck()
         findings = check.check("repositories/user_repository.py", code)
-        
+
         assert len(findings) > 0
         assert any("controller" in f.message.lower() for f in findings)
         assert findings[0].severity in ["high", "medium"]
@@ -49,7 +48,7 @@ class UserRepository:
 """
         check = LayerSeparationCheck()
         findings = check.check("repositories/user_repository.py", code)
-        
+
         assert len(findings) > 0
         assert any("service" in f.message.lower() for f in findings)
 
@@ -64,7 +63,7 @@ class User:
 """
         check = LayerSeparationCheck()
         findings = check.check("models/user.py", code)
-        
+
         assert len(findings) > 0
 
     def test_controller_importing_repository_allowed(self):
@@ -79,7 +78,7 @@ async def get_users(repo: UserRepository = Depends()):
 """
         check = LayerSeparationCheck()
         findings = check.check("api/user_controller.py", code)
-        
+
         # Should not fail for correct direction
         assert len([f for f in findings if "prohibited" in f.message.lower()]) == 0
 
@@ -94,7 +93,7 @@ class UserService:
 """
         check = LayerSeparationCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         # Should pass - correct direction
         assert len([f for f in findings if "prohibited" in f.message.lower()]) == 0
 
@@ -117,7 +116,7 @@ async def create_user(
 """
         check = DependencyInjectionCheck()
         findings = check.check("api/users.py", code)
-        
+
         # Should pass - using Depends
         assert len(findings) == 0
 
@@ -133,7 +132,7 @@ async def create_user(data: UserCreate):
 """
         check = DependencyInjectionCheck()
         findings = check.check("api/users.py", code)
-        
+
         assert len(findings) > 0
         assert any("depends" in f.message.lower() for f in findings)
 
@@ -149,7 +148,7 @@ class UserService:
 """
         check = DependencyInjectionCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         # Constructor injection is fine in services
         assert len(findings) == 0
 
@@ -168,7 +167,7 @@ async def fetch_user_data(user_id: int):
 """
         check = AsyncPatternsCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         assert len(findings) > 0
         assert any("httpx" in f.suggested_fix.lower() or "async" in f.suggested_fix.lower() for f in findings)
 
@@ -184,7 +183,7 @@ async def fetch_user_data(user_id: int):
 """
         check = AsyncPatternsCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         # Should pass - using async HTTP client
         assert len(findings) == 0
 
@@ -199,7 +198,7 @@ async def process_with_delay():
 """
         check = AsyncPatternsCheck()
         findings = check.check("services/processor.py", code)
-        
+
         assert len(findings) > 0
         assert any("asyncio.sleep" in f.suggested_fix for f in findings)
 
@@ -214,7 +213,7 @@ async def process_with_delay():
 """
         check = AsyncPatternsCheck()
         findings = check.check("services/processor.py", code)
-        
+
         # Should pass - using async sleep
         assert len(findings) == 0
 
@@ -238,10 +237,10 @@ class OrderService:
     pass
 """
         }
-        
+
         check = CircularDependencyCheck()
         findings = check.check_project(file_contents)
-        
+
         assert len(findings) > 0
         assert any("circular" in f.message.lower() for f in findings)
 
@@ -262,10 +261,10 @@ class User:
     pass
 """
         }
-        
+
         check = CircularDependencyCheck()
         findings = check.check_project(file_contents)
-        
+
         # Should pass - no circular dependencies
         assert len(findings) == 0
 
@@ -285,7 +284,7 @@ async def process():
 """
         validator = ArchitectureValidator()
         findings = validator.validate_file("repositories/repo.py", code)
-        
+
         # Should have findings from multiple checks
         assert len(findings) > 0
 
@@ -295,10 +294,10 @@ async def process():
             "services/a.py": "from services.b import B",
             "services/b.py": "from services.a import A",
         }
-        
+
         validator = ArchitectureValidator()
         all_findings = validator.validate_project(file_contents)
-        
+
         # Should have findings for circular dependency
         assert len(all_findings) > 0
 
@@ -316,7 +315,7 @@ class UserService:
 """
         validator = ArchitectureValidator()
         findings = validator.validate_file("services/user_service.py", code)
-        
+
         # Clean code should have no critical findings
         critical_findings = [f for f in findings if f.severity == "high"]
         assert len(critical_findings) == 0

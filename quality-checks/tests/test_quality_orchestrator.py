@@ -12,7 +12,6 @@ import pytest
 import json
 from quality_checks.quality_orchestrator import (
     QualityCheckOrchestrator,
-    QualityCheckResult,
 )
 
 
@@ -53,12 +52,12 @@ def test_validate_token():
     assert validate_token("token") == True
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Should execute without errors
         assert result is not None
         assert result.mode == "warning"
@@ -73,12 +72,12 @@ def test_validate_token():
 API_KEY = "hardcoded_secret"  # Security issue!
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Should have issues but still pass in warning mode
         assert result.total_issues > 0
         assert result.passed == True  # Warning mode allows merge
@@ -96,12 +95,12 @@ def authenticate():
     pass
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="error")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Should fail due to security issue
         assert result.total_issues > 0
         assert result.critical_issues > 0
@@ -121,12 +120,12 @@ from api.controllers import Controller
 # (in a repository file - wrong layer)
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Should have issues of different severities
         assert result.total_issues > 0
         assert result.critical_issues >= 0
@@ -148,13 +147,13 @@ for user in users:
     orders = db.query(Order).filter_by(user_id=user.id).all()
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
         report = orchestrator.generate_report(result)
-        
+
         # Report should mention issues
         assert len(report) > 0
         assert "Security" in report or "security" in report or "Performance" in report
@@ -170,13 +169,13 @@ def hello():
     return "hello"
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
         json_output = orchestrator.export_results_json(result)
-        
+
         # Should be valid JSON
         parsed = json.loads(json_output)
         assert "passed" in parsed
@@ -190,12 +189,12 @@ def hello():
         changed_files = {
             "src/test.py": "code"
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Check override fields exist
         assert hasattr(result, "override_used")
         assert hasattr(result, "override_justification")
@@ -215,7 +214,7 @@ Major refactoring of user service with breaking changes.
 ## Testing
 - All tests updated
 """ + "." * 100
-        
+
         changed_files = {
             "api/users.py": """
 def get_user(user_id: int, include_profile: bool) -> User:
@@ -235,12 +234,12 @@ def get_user(user_id: int) -> User:
     return User()
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="warning")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files, old_files
         )
-        
+
         # Should complete validation
         assert result is not None
         assert result.mode == "warning"
@@ -265,7 +264,7 @@ Implementing user authentication system with JWT tokens.
 ## Issue Reference
 Fixes ENG-123
 """
-        
+
         changed_files = {
             "src/auth/jwt_service.py": """
 import os
@@ -333,12 +332,12 @@ def test_validate_token_invalid_token_returns_none():
     assert user_id is None
 """
         }
-        
+
         orchestrator = QualityCheckOrchestrator(mode="error")
         result = orchestrator.validate_pr(
             pr_title, pr_description, changed_files
         )
-        
+
         # Should pass all checks
         assert result.passed == True
         assert result.critical_issues == 0

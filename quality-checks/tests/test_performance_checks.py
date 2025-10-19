@@ -15,7 +15,6 @@ from quality_checks.performance_checks import (
     DatabaseIndexCheck,
     AlgorithmComplexityCheck,
     MemoryLeakCheck,
-    PerformanceFinding,
 )
 
 
@@ -32,7 +31,7 @@ for user in users:
 """
         check = NPlusOneQueryCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         assert len(findings) > 0
         assert any("n+1" in f.message.lower() for f in findings)
         assert findings[0].severity in ["high", "critical"]
@@ -45,7 +44,7 @@ orders = [db.query(Order).filter_by(user_id=uid).all() for uid in user_ids]
 """
         check = NPlusOneQueryCheck()
         findings = check.check("services/order_service.py", code)
-        
+
         assert len(findings) > 0
         assert any("n+1" in f.message.lower() for f in findings)
 
@@ -61,7 +60,7 @@ for user in users:
 """
         check = NPlusOneQueryCheck()
         findings = check.check("services/user_service.py", code)
-        
+
         # Should pass - using eager loading
         n_plus_one_findings = [f for f in findings if "n+1" in f.message.lower()]
         assert len(n_plus_one_findings) == 0
@@ -75,7 +74,7 @@ for order in orders:
 """
         check = NPlusOneQueryCheck()
         findings = check.check("services/order_service.py", code)
-        
+
         # Should pass - no query in loop
         assert len(findings) == 0
 
@@ -91,7 +90,7 @@ order_date = Column(DateTime)
 """
         check = DatabaseIndexCheck()
         findings = check.check("models/order.py", code)
-        
+
         assert len(findings) > 0
         assert any("index" in f.message.lower() for f in findings)
 
@@ -103,7 +102,7 @@ order_date = Column(DateTime)
 """
         check = DatabaseIndexCheck()
         findings = check.check("models/order.py", code)
-        
+
         # Should pass - index specified
         fk_findings = [f for f in findings if "foreign" in f.message.lower()]
         assert len(fk_findings) == 0
@@ -115,7 +114,7 @@ user_id = Column(Integer, ForeignKey('users.id'), db_index=True)
 """
         check = DatabaseIndexCheck()
         findings = check.check("models/order.py", code)
-        
+
         # Should pass - db_index specified
         assert len([f for f in findings if "foreign" in f.message.lower()]) == 0
 
@@ -129,7 +128,7 @@ orders = session.query(Order).filter(Order.status == 'pending').all()
 """
         check = DatabaseIndexCheck()
         findings = check.check("models/order.py", code)
-        
+
         # May suggest index on status field
         assert len(findings) >= 0  # Advisory check
 
@@ -150,7 +149,7 @@ def find_duplicates(items):
 """
         check = AlgorithmComplexityCheck()
         findings = check.check("services/processor.py", code)
-        
+
         assert len(findings) > 0
         assert any("nested" in f.message.lower() or "o(n" in f.message.lower() for f in findings)
 
@@ -166,7 +165,7 @@ def remove_duplicates(items):
 """
         check = AlgorithmComplexityCheck()
         findings = check.check("services/processor.py", code)
-        
+
         assert len(findings) > 0
         assert any("set" in f.suggested_fix.lower() for f in findings)
 
@@ -184,7 +183,7 @@ def remove_duplicates(items):
 """
         check = AlgorithmComplexityCheck()
         findings = check.check("services/processor.py", code)
-        
+
         # Should pass - using set for O(1) lookup
         inefficient_findings = [f for f in findings if "inefficient" in f.message.lower()]
         assert len(inefficient_findings) == 0
@@ -201,7 +200,7 @@ def process_items(items, multiplier):
 """
         check = AlgorithmComplexityCheck()
         findings = check.check("services/processor.py", code)
-        
+
         # Should detect loop invariant
         assert len(findings) > 0
 
@@ -219,7 +218,7 @@ def store_data(key, value):
 """
         check = MemoryLeakCheck()
         findings = check.check("services/cache.py", code)
-        
+
         assert len(findings) > 0
         assert any("unbounded" in f.message.lower() or "cache" in f.message.lower() for f in findings)
 
@@ -234,7 +233,7 @@ def expensive_function(arg):
 """
         check = MemoryLeakCheck()
         findings = check.check("services/processor.py", code)
-        
+
         # Should pass - bounded cache
         assert len(findings) == 0
 
@@ -249,7 +248,7 @@ def process_batch():
 """
         check = MemoryLeakCheck()
         findings = check.check("services/processor.py", code)
-        
+
         # Should pass - local scope
         assert len(findings) == 0
 
@@ -274,7 +273,7 @@ def bad_algorithm(items):
 """
         validator = PerformanceValidator()
         findings = validator.validate_file("services/user_service.py", code)
-        
+
         # Should have findings from multiple checks
         assert len(findings) > 0
 
@@ -290,10 +289,10 @@ for user in users:
 user_id = Column(Integer, ForeignKey('users.id'))  # No index
 """
         }
-        
+
         validator = PerformanceValidator()
         all_findings = validator.validate_pr(changed_files)
-        
+
         # Should have findings from both files
         assert len(all_findings) > 0
         assert len(all_findings.keys()) >= 1
@@ -312,11 +311,11 @@ for user in users:
     db.query(Order).filter_by(user_id=user.id).all()
 """
         }
-        
+
         validator = PerformanceValidator()
         all_findings = validator.validate_pr(changed_files)
         report = validator.format_findings_report(all_findings)
-        
+
         assert "service1.py" in report or "service2.py" in report
         assert len(report) > 0
 
